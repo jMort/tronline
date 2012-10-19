@@ -6,4 +6,8 @@ $(document).ready(function() {
 	function sendMessage(message) {
 		socket.emit('sendMessage', { message: message });
 	}
+	$('#button').click(function() {
+		sendMessage($('#message').val());
+		$('#message').val('');
+	});
 });
