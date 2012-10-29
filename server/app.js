@@ -10,6 +10,12 @@ console.log(port);
 
 var io = require('socket.io').listen(port);
 
+// This makes the server use long polling
+io.configure(function() {
+	io.set("transports", ["xhr-polling"]);
+	io.set("polling duration", 10);
+});
+
 var numPlayers = 0;
 
 io.sockets.on('connection', function(socket) {
