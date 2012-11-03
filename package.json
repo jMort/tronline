@@ -1,0 +1,16 @@
+{
+	"name": "Tronline",
+  "version": "0.0.0",
+  "description": "An online multiplayer version of the game Tron.",
+  "homepage": "http://jmort.github.com/tronline",
+  "author": {
+    "name": "Joshua Morton"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jMort/tronline.git"
+  },
+  "dependencies": {
+    "socket.io": ">= 0.9.10"
+  }
+}
