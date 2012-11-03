@@ -1,3 +1,4 @@
+var sizeOfObject = require('./objectSize').sizeOfObject;
 /*var http = require('http');
 http.createServer(function (req, res) {
   res.writeHead(200, {'Content-Type': 'text/html'});
@@ -11,23 +12,34 @@ console.log(port);
 var io = require('socket.io').listen(port);
 
 // This makes the server use long polling
-io.configure(function() {
+/*io.configure(function() {
 	io.set("transports", ["xhr-polling"]);
 	io.set("polling duration", 10);
-});
+});*/
 
 var numPlayers = 0;
 
+var bytesSent = 0;
+var bytesReceived = 0;
+
 io.sockets.on('connection', function(socket) {
 	numPlayers++;
-	io.sockets.emit('receiveMessage', { message: 'NEW PERSON joined' });
+	var obj = { message: 'NEW PERSON joined' };
+	io.sockets.emit('receiveMessage', obj);
+	bytesSent += sizeOfObject(obj);
+	console.log("Sent: "+bytesSent/1024+"KB Received: "+bytesReceived/1024+"KB Total: "+(bytesSent+bytesReceived)/1024+"KB");
 	socket.on('sendMessage', function(data) {
-		console.log(data);
+		bytesReceived += sizeOfObject(data);
 		io.sockets.emit('receiveMessage', data);
+		bytesSent += sizeOfObject(data);
+		console.log("Sent: "+bytesSent/1024+"KB Received: "+bytesReceived/1024+"KB Total: "+(bytesSent+bytesReceived)/1024+"KB");
 	});
 	socket.on('disconnect', function() {
 		numPlayers--;
 		console.log('User disconnected');
-		io.sockets.emit('receiveMessage', { message: 'User disconnected' });
+		obj = { message: 'User disconnected' };
+		io.sockets.emit('receiveMessage', obj);
+		bytesSent += sizeOfObject(obj);
+		console.log("Sent: "+bytesSent/1024+"KB Received: "+bytesReceived/1024+"KB Total: "+(bytesSent+bytesReceived)/1024+"KB");
 	});
 });
