@@ -6,6 +6,7 @@ var sizeOfObject = require('./objectSize').sizeOfObject;
 
 app.listen(80);
 
+// Client request handler
 function handler(req, res) {
   // Automatically look for index.html file if path is a directory as this is not done by default
   if (fs.existsSync(__dirname + '/public' + req.url)) {
