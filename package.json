@@ -11,7 +11,6 @@
     "url": "https://github.com/jMort/tronline.git"
   },
   "dependencies": {
-    "socket.io": ">= 0.9.10",
-    "express": "3.x"
+    "socket.io": ">= 0.9.10"
   }
 }
