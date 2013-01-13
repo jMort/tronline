@@ -2,6 +2,7 @@ define(function(require) {
   var $         = require('jquery'),
       _         = require('underscore'),
       Backbone  = require('backbone'),
+      eventBus  = require('eventBus'),
       LoginView = require('login/LoginView'),
       io        = require('/socket.io/socket.io.js');
 
@@ -12,6 +13,9 @@ define(function(require) {
         console.log('Socket connected');
       });
       this.render();
+      eventBus.on('login', function(data) {
+        console.log('receiving login event', data.nickname);
+      });
     },
     render: function() {
       this.$el = $('.mainView');
