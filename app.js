@@ -22,16 +22,18 @@ function handler(req, res) {
         res.writeHead(404);
         res.end('<html><head><title>404 Page Not Found</title></head><h1>404 Page Not Found</h1></html>');
       } else {
-        var contentType = 'text/html';
-        // If path ends in .js change content type to text/javascript
-        if (req.url.lastIndexOf('.js') == req.url.length - 3)
-          contentType = 'text/javascript';
-        // If path ends in .css change content type to text/css
-        if (req.url.lastIndexOf('.css') == req.url.length - 4)
-          contentType = 'text/css';
-        // If path ends in .png change content type to image/png
-        if (req.url.lastIndexOf('.png') == req.url.length - 4)
-          contentType = 'image/png';
+        // Default content type will be text/plain
+        var contentType = 'text/plain';
+        var extensionToContentType = {
+          '.html': 'text/html',
+          '.js'  : 'text/javascript',
+          '.css' : 'text/css',
+          '.png' : 'image/png'
+        };
+        for (var ext in extensionToContentType) {
+          if (req.url.lastIndexOf(ext) == req.url.length - ext.length)
+            contentType = extensionToContentType[ext];
+        }
         res.writeHead(200, { 'Content-type': contentType });
         res.end(data);
       }
