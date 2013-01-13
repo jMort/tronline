@@ -2,7 +2,7 @@ var app = require('http').createServer(handler),
     io  = require('socket.io').listen(app, { 'log level': 1 }),
     fs  = require('fs');
 
-var sizeOfObject = require('./objectSize').sizeOfObject;
+var sizeOfObject = require('./util/objectSize').sizeOfObject;
 
 app.listen(80);
 
