@@ -48,10 +48,15 @@ function logDataUsage() {
   console.log('Sent: ' + sent + 'KB Received: ' + received + 'KB Total: ' + total);
 }
 
+var numPlayers = 0;
 
 io.sockets.on('connection', function(socket) {
   console.log('User connected');
+  numPlayers++;
+  io.sockets.emit('numPlayersOnline', numPlayers);
   socket.on('disconnect', function() {
     console.log('User disconnected');
+    numPlayers--;
+    io.sockets.emit('numPlayersOnline', numPlayers);
   });
 });

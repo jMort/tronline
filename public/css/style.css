@@ -44,7 +44,7 @@ div.loginBox button {
     font-size: 14pt;
     font-weight: bold;
 }
-div.playersOnline {
+div.numPlayersOnline {
     text-align: center;
     color: #DDD;
 }
