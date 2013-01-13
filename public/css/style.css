@@ -1,0 +1,38 @@
+body {
+    font-family: "Courier New";
+    margin: 0;
+    background: #333 url('../img/bg.png');
+}
+
+/* MainView */
+h1 {
+    text-align: center;
+    color: #DDD;
+}
+
+/* LoginView */
+div.loginBox {
+    width: 250px;
+    height: 140px;
+    padding: 5px;
+    margin: auto auto;
+    border: 1px solid black;
+    border-radius: 7px;
+    background-color: #666;
+    opacity: 0.5;
+    filter: alpha(opacity=50); /* For IE8 and earlier */
+    text-align: center;
+}
+div.loginBox input[name="name"] {
+    text-align: center;
+    height: 25px;
+    font-family: "Courier New";
+    font-weight: bold;
+    font-size: 14pt;
+}
+div.loginBox button {
+    padding: 5px 12px;
+    font-family: "Courier New";
+    font-size: 14pt;
+    font-weight: bold;
+}
