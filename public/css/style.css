@@ -13,7 +13,7 @@ h1 {
 /* LoginView */
 div.loginBox {
     width: 250px;
-    height: 140px;
+    height: 145px;
     padding: 5px;
     margin: auto auto;
     border: 1px solid black;
@@ -24,6 +24,12 @@ div.loginBox {
     opacity: 0.5;
     filter: alpha(opacity=50); /* For IE8 and earlier */
     text-align: center;
+    -webkit-box-shadow: 0px 0px 15px 5px rgba(255, 255, 190, .75);
+    -moz-box-shadow: 0px 0px 15px 5px rgba(255, 255, 190, .75);
+    box-shadow: 0px 0px 1000px 5px rgba(255, 255, 190, .75);
+}
+div.loginBox h3 {
+    font-size: 13pt;
 }
 div.loginBox input[name="name"] {
     text-align: center;
