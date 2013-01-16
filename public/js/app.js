@@ -7,9 +7,15 @@ define(function(require) {
 
   var initialize = function() {
     console.log('initializing application');
+
     var router = new Router();
-    console.log('starting backbone history');
     Backbone.history.start({ pushState: true });
+
+    Backbone.View.prototype.destroy = function() {
+      this.remove();
+      this.unbind();
+    };
+
     new MainView();
   };
 

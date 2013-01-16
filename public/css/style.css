@@ -2,6 +2,7 @@ body {
     font-family: "Courier New";
     margin: 0;
     background: #333 url('../img/bg.png');
+    overflow: hidden;
 }
 
 /* MainView */
@@ -42,6 +43,7 @@ div.loginBox h3 {
     font-size: 13pt;
 }
 div.loginBox input[name="name"] {
+    text-transform: uppercase;
     text-align: center;
     height: 25px;
     font-family: "Courier New";
