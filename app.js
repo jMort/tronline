@@ -11,16 +11,19 @@ function handler(req, res) {
   // Automatically look for index.html file if path is a directory as this is not done by default
   if (fs.existsSync(__dirname + '/public' + req.url)) {
     if (fs.statSync(__dirname + '/public' + req.url).isDirectory()) {
-      if (fs.existsSync(__dirname + '/public' + req.url + '/index.html')) {
-        req.url += '/index.html';
+      if (fs.existsSync(__dirname + '/public' + req.url + 'index.html')) {
+        req.url += 'index.html';
       }
     }
   }
+  
   fs.readFile(__dirname + '/public' + req.url,
     function(err, data) {
       if (err) {
-        res.writeHead(404);
-        res.end('<html><head><title>404 Page Not Found</title></head><h1>404 Page Not Found</h1></html>');
+        //res.writeHead(404);
+        //res.end('<html><head><title>404 Page Not Found</title></head><h1>404 Page Not Found</h1></html>');
+        res.writeHead(200, { 'Content-type': 'text/html' });
+        res.end(fs.readFileSync(__dirname + '/public/index.html'));
       } else {
         // Default content type will be text/plain
         var contentType = 'text/plain';

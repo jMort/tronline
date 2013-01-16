@@ -29,6 +29,14 @@ define(function(require) {
       else if (numPlayers > 1)
         message = 'There are currently ' + numPlayers + ' players online';
       this.$('div.numPlayersOnline p').html(message);
+
+      /* When div.numPlayersOnline is updated a light background shows up
+         on the div so this is just a little hack to get the loginBox glow
+         to refresh itself and render over the top */ 
+      this.$('div.loginBox').addClass('glow-alt').removeClass('glow');
+      setTimeout(function() {
+        this.$('div.loginBox').addClass('glow').removeClass('glow-alt');
+      }, 0);
     },
     onKeypress: function(e) {
       if (e.keyCode == 13)
