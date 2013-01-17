@@ -5,7 +5,8 @@ define(function(require) {
       eventBus = require('eventBus'),
       template = require('text!login/login.html');
 
-  require('/js/util/jquerySlide.js');
+  require('/js/util/slide.jquery.js');
+  require('/js/util/wiggle.jquery.js');
 
   var LoginView = Backbone.View.extend({
     events: {
@@ -39,10 +40,23 @@ define(function(require) {
     },
     enter: function() {
       var nickname = this.$('div.loginBox input[name="name"]').val().toUpperCase();
-      eventBus.trigger('login', { nickname: nickname });
+      this.socket.emit('checkLogin', nickname);
       var self = this;
-      this.$el.slideLeft(500, function() {
-        self.destroy();
+      this.socket.on('loginSuccessful', function() {
+        self.$('div.loginBox').removeClass('glowBlue').addClass('glowGreen');
+        self.$('div.loginBox input[name="name"]').addClass('green');
+        setTimeout(function() {
+          self.$el.slideLeft(500, function() {
+            eventBus.trigger('showLobby', { nickname: nickname });
+            self.destroy();
+          });
+        }, 400);
+      });
+      this.socket.on('loginUnsuccessful', function() {
+        self.$('div.loginBox').removeClass('glowBlue').addClass('glowRed');
+        self.$('div.loginBox input[name="name"]').addClass('red');
+        if (!(self.$('div.loginBox').wiggle('isWiggling')))
+          self.$('div.loginBox').wiggle('start', { delay: 15, limit: 3 });
       });
     },
 
@@ -50,9 +64,9 @@ define(function(require) {
       /* When div.numPlayersOnline is updated a light background shows up
          on the div so this is just a little hack to get the loginBox glow
          to refresh itself and render over the top */ 
-      this.$('div.loginBox').addClass('glow-alt').removeClass('glow');
+      this.$('div.loginBox').addClass('glowBlue-alt').removeClass('glowBlue');
       setTimeout(function() {
-        this.$('div.loginBox').addClass('glow').removeClass('glow-alt');
+        this.$('div.loginBox').addClass('glowBlue').removeClass('glowBlue-alt');
       }, 0);
     }
   });

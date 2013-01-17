@@ -54,14 +54,31 @@ function logDataUsage() {
 }
 
 var numPlayers = 0;
+var players = {};
 
 io.sockets.on('connection', function(socket) {
   console.log('User connected');
   numPlayers++;
+  var name;
   io.sockets.emit('numPlayersOnline', numPlayers);
+  socket.on('checkLogin', function(nickname) {
+    if (players[nickname]) {
+      socket.emit('loginUnsuccessful');
+    } else {
+      socket.emit('loginSuccessful');
+      players[nickname] = true;
+      name = nickname;
+    }
+  });
   socket.on('disconnect', function() {
     console.log('User disconnected');
     numPlayers--;
+    for (var i in players) {
+      if (i == name) {
+        delete players[i];
+        break;
+      }
+    }
     io.sockets.emit('numPlayersOnline', numPlayers);
   });
 });
