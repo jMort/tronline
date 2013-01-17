@@ -162,3 +162,33 @@ div.numPlayersOnline p {
     -moz-text-shadow: 0px 0px 15px rgba(220, 220, 220, .75);
     text-shadow: 0px 0px 15px rgba(220, 220, 220, .75);
 }
+
+/* SidebarView */
+div.sidebarView {
+    width: 220px;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    right: 0;
+    border: 1px solid #444;
+    -webkit-border-radius: 7px;
+    -moz-border-radius: 7px;
+    border-radius: 7px;
+    background-color: #666;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ChatView */
+div.chatView {
+    width: 100%;
+    height: 250px;
+    position: fixed;
+    bottom: 0;
+    right: 220px;
+    border: 1px solid #444;
+    -webkit-border-radius: 7px;
+    -moz-border-radius: 7px;
+    border-radius: 7px;
+    background-color: #666;
+    background-color: rgba(255, 255, 255, 0.2);
+}

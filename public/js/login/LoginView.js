@@ -5,8 +5,8 @@ define(function(require) {
       eventBus = require('eventBus'),
       template = require('text!login/login.html');
 
-  require('/js/util/slide.jquery.js');
-  require('/js/util/wiggle.jquery.js');
+  require('slide.jquery');
+  require('wiggle.jquery');
 
   var LoginView = Backbone.View.extend({
     events: {
@@ -24,6 +24,7 @@ define(function(require) {
     },
     render: function() {
       this.$el.html(_.template(template)());
+      this.$('div.loginBox input[name="name"]').focus();
     },
     updateNumPlayersOnline: function(numPlayers) {
       var message = 'There is currently one player online';
@@ -46,9 +47,9 @@ define(function(require) {
         self.$('div.loginBox').removeClass('glowBlue').addClass('glowGreen');
         self.$('div.loginBox input[name="name"]').addClass('green');
         setTimeout(function() {
+          Backbone.history.navigate('/home');
           self.$el.slideLeft(500, function() {
             eventBus.trigger('showLobby', { nickname: nickname });
-            self.destroy();
           });
         }, 400);
       });

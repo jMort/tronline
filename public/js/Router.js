@@ -1,19 +1,21 @@
 define(function(require) {
   var $        = require('jquery'),
       _        = require('underscore'),
-      Backbone = require('backbone');
+      Backbone = require('backbone'),
+      eventBus = require('eventBus');
 
   var Router = Backbone.Router.extend({
     routes: {
-      'view/:id': 'view',
+      'home': 'home',
 
       '*action': 'defaultAction'
     },
-    view: function(id) {
-      alert(id);
+    home: function() {
+      eventBus.trigger('showLobby');
     },
     defaultAction: function(action) {
       Backbone.history.navigate('/');
+      eventBus.trigger('showLogin');
     }
   });
 
