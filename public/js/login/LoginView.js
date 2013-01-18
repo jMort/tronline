@@ -47,7 +47,7 @@ define(function(require) {
         self.$('div.loginBox').removeClass('glowBlue').addClass('glowGreen');
         self.$('div.loginBox input[name="name"]').addClass('green');
         setTimeout(function() {
-          Backbone.history.navigate('/home');
+          Backbone.history.navigate('/home', { replace: true });
           self.$el.slideLeft(500, function() {
             eventBus.trigger('showLobby', { nickname: nickname });
           });

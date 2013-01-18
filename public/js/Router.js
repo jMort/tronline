@@ -6,13 +6,13 @@ define(function(require) {
 
   var Router = Backbone.Router.extend({
     routes: {
-      'home': 'home',
+      //'home': 'home',
 
       '*action': 'defaultAction'
     },
-    home: function() {
+    /*home: function() {
       eventBus.trigger('showLobby');
-    },
+    },*/
     defaultAction: function(action) {
       Backbone.history.navigate('/');
       eventBus.trigger('showLogin');
