@@ -163,6 +163,55 @@ div.numPlayersOnline p {
     text-shadow: 0px 0px 15px rgba(220, 220, 220, .75);
 }
 
+/* HomeView */
+div.homeView {
+    margin-right: 220px;
+}
+span.welcomeMessage {
+    position: fixed;
+    top: 0;
+    right: 220px;
+    padding: 10px;
+    color: #DDD;
+    font-weight: bold;
+    font-size: 13pt;
+    -webkit-text-shadow: 0px 0px 15px rgba(220, 220, 220, .75);
+    -moz-text-shadow: 0px 0px 15px rgba(220, 220, 220, .75);
+    text-shadow: 0px 0px 15px rgba(220, 220, 220, .75);
+}
+div.buttonsContainer {
+    text-align: center;
+}
+div.buttonContainer {
+    display: inline-block;
+}
+div.buttonContainer span {
+    color: #DDD;
+    font-weight: bold;
+    font-size: 13pt;
+    -webkit-text-shadow: 0px 0px 15px rgba(220, 220, 220, .75);
+    -moz-text-shadow: 0px 0px 15px rgba(220, 220, 220, .75);
+    text-shadow: 0px 0px 15px rgba(220, 220, 220, .75);
+}
+img.imgButton {
+    margin: 40px 40px 0 40px;
+    cursor: pointer;
+    opacity:0.4;
+    filter:alpha(opacity=40); /* For IE8 and earlier */
+    -webkit-transition: all 0.2s linear;
+    -moz-transition: all 0.2s linear;
+    -o-transition: all 0.2s linear;
+    transition: all 0.2s linear;
+}
+img.imgButton:hover {
+    opacity:1;
+    filter:alpha(opacity=100); /* For IE8 and earlier */
+    -webkit-transition: all 0.2s linear;
+    -moz-transition: all 0.2s linear;
+    -o-transition: all 0.2s linear;
+    transition: all 0.2s linear;
+}
+
 /* SidebarView */
 div.sidebarView {
     width: 220px;

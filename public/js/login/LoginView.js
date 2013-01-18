@@ -51,6 +51,9 @@ define(function(require) {
           self.$el.slideLeft(500, function() {
             eventBus.trigger('showLobby', { nickname: nickname });
           });
+          $('h1').animate({
+            'margin-right': '220px'
+          }, 600);
         }, 400);
       });
       this.socket.on('loginUnsuccessful', function() {
