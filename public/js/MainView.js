@@ -17,12 +17,13 @@ define(function(require) {
         if (window && window.location && window.location.href) {
           var href = window.location.href;
           if (href.lastIndexOf('/') === href.length-1) {
-            if (href.substring(0, href.length-1) == 'http://tronline.me')
+            var trimmed = href.substring(0, href.length-1);
+            if (trimmed == 'http://tronline.me' || trimmed == PRODUCTION)
               return PRODUCTION;
             else
               return DEVELOPMENT;
           } else {
-            if (href == 'http://tronline.me')
+            if (href == 'http://tronline.me' || trimmed == PRODUCTION)
               return PRODUCTION;
             else
               return DEVELOPMENT;
