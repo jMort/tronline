@@ -4,7 +4,7 @@ var app = require('http').createServer(handler),
 
 var sizeOfObject = require('./util/objectSize').sizeOfObject;
 
-app.listen(80);
+app.listen(parseInt(process.env.PORT) || 80);
 
 // Client request handler
 function handler(req, res) {
