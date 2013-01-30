@@ -6,12 +6,37 @@ define(function(require) {
       LoginView   = require('login/LoginView'),
       HomeView    = require('home/HomeView'),
       SidebarView = require('home/SidebarView'),
-      ChatView    = require('home/ChatView'),
-      io          = require('/socket.io/socket.io.js');
+      ChatView    = require('home/ChatView');
 
+  var baseURL;
   var MainView = Backbone.View.extend({
     initialize: function() {
-      this.socket = io.connect('http://localhost');
+      baseURL = (function() {
+        var PRODUCTION = 'http://tronline.me:8080';
+        var DEVELOPMENT = 'http://localhost';
+        if (window && window.location && window.location.href) {
+          var href = window.location.href;
+          if (href.lastIndexOf('/') === href.length-1) {
+            if (href.substring(0, href.length-1) == 'http://tronline.me')
+              return PRODUCTION;
+            else
+              return DEVELOPMENT;
+          } else {
+            if (href == 'http://tronline.me')
+              return PRODUCTION;
+            else
+              return DEVELOPMENT;
+          }
+        }
+      })();
+
+      var self = this;
+      $.getScript(baseURL+'/socket.io/socket.io.js', function() {
+        self.onSocketIOLoaded(io);
+      });
+    },
+    onSocketIOLoaded: function(io) {
+      this.socket = io.connect(baseURL);
       this.socket.on('connect', function() {
         console.log('Socket connected');
       });
