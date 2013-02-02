@@ -12,7 +12,7 @@ define(function(require) {
   var MainView = Backbone.View.extend({
     initialize: function() {
       baseURL = (function() {
-        var PRODUCTION = 'http://tronline.me:8080';
+        var PRODUCTION = 'http://tronline.me';
         var DEVELOPMENT = 'http://localhost';
         if (window && window.location && window.location.href) {
           var href = window.location.href;
@@ -32,7 +32,7 @@ define(function(require) {
       })();
 
       var self = this;
-      $.getScript(baseURL+'/socket.io/socket.io.js', function() {
+      $.getScript('/socket.io/socket.io.js', function() {
         self.onSocketIOLoaded(io);
       });
     },
