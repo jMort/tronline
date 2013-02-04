@@ -12,23 +12,18 @@ define(function(require) {
   var MainView = Backbone.View.extend({
     initialize: function() {
       baseURL = (function() {
-        var PRODUCTION = 'http://tronline.me';
+        var PRODUCTION = 'http://www.tronline.me';
         var DEVELOPMENT = 'http://localhost';
         if (window && window.location && window.location.href) {
           var href = window.location.href;
-          if (href.lastIndexOf('/') === href.length-1) {
-            var trimmed = href.substring(0, href.length-1);
-            if (trimmed == 'http://tronline.me' || trimmed == PRODUCTION)
-              return PRODUCTION;
-            else
-              return DEVELOPMENT;
-          } else {
-            if (href == 'http://tronline.me' || trimmed == PRODUCTION)
-              return PRODUCTION;
-            else
-              return DEVELOPMENT;
-          }
+          if (href.lastIndexOf('/') === href.length-1)
+            href = href.substring(0, href.length-1);
+          if (href == DEVELOPMENT)
+            return DEVELOPMENT;
+          else
+            return PRODUCTION;
         }
+        return PRODUCTION;
       })();
 
       var self = this;
