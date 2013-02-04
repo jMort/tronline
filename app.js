@@ -10,6 +10,10 @@ app.listen(port);
 
 // Client request handler
 function handler(req, res) {
+  if (req.headers.host === 'tronline.me') {
+    res.writeHead(303, { 'Location': 'http://www.tronline.me'+req.url });
+    return res.end();
+  }
   // Automatically look for index.html file if path is a directory as this is not done by default
   if (fs.existsSync(__dirname + '/public' + req.url)) {
     if (fs.statSync(__dirname + '/public' + req.url).isDirectory()) {
