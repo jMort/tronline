@@ -6,7 +6,8 @@ define(function(require) {
       LoginView   = require('login/LoginView'),
       HomeView    = require('home/HomeView'),
       SidebarView = require('home/SidebarView'),
-      ChatView    = require('home/ChatView');
+      ChatView    = require('home/ChatView'),
+      GameView    = require('game/GameView');
 
   var baseURL;
   var MainView = Backbone.View.extend({
@@ -52,6 +53,12 @@ define(function(require) {
         self.loginView.destroy();
         self.showLobby(nickname);
       });
+      eventBus.on('playSinglePlayer', function() {
+        self.homeView.destroy();
+        self.sidebarView.destroy();
+        self.chatView.destroy();
+        self.showSinglePlayer();
+      });
     },
     render: function() {
       this.$el = $('.mainView');
@@ -73,8 +80,17 @@ define(function(require) {
                                     nickname: nickname });
       var sidebarView = new SidebarView({ el: this.$('.sidebarView'), socket: this.socket,
                                           nickname: nickname });
-      var chatViw = new ChatView({ el: this.$('.chatView'), socket: this.socket,
+      var chatView = new ChatView({ el: this.$('.chatView'), socket: this.socket,
                                    nickname: nickname });
+      this.homeView = homeView;
+      this.sidebarView = sidebarView;
+      this.chatView = chatView;
+    },
+    showSinglePlayer: function() {
+      this.$el.html('');
+      this.$el.append('<div class="gameView"></div>');
+      var gameView = new GameView({ el: this.$('.gameView') });
+      this.gameView = gameView;
     }
   });
 

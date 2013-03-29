@@ -5,7 +5,8 @@ require.config({
     'wiggle.jquery': '/js/util/wiggle.jquery',
     'underscore': '/js/libs/underscore-1.4.3.min',
     'backbone': '/js/libs/backbone-0.9.9.min',
-    'text': '/js/libs/requirejs-2.1.2/text'
+    'text': '/js/libs/requirejs-2.1.2/text',
+    'kinetic': '/js/libs/kinetic-v4.3.3.min'
   },
   shim: {
     'underscore': {
@@ -23,6 +24,9 @@ require.config({
     'backbone': {
       deps: ['underscore', 'jquery'],
       exports: 'Backbone'
+    },
+    'kinetic': {
+      exports: 'Kinetic'
     }
   }
 });

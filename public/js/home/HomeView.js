@@ -9,7 +9,7 @@ define(function(require) {
     events: {
       'mouseover .imgButton': 'showButtonText',
       'mouseout  .imgButton': 'hideButtonText',
-      'click .imgButton:nth-child(1)': 'playSinglePlayer'
+      'click .imgButton:nth-child(1)': 'clickSinglePlayer'
     },
     initialize: function(options) {
       this.socket = options.socket;
@@ -31,8 +31,9 @@ define(function(require) {
         $('span', buttonContainer).css('display', 'inline');
       }).css('visibility', 'hidden');
     },
-    playSinglePlayer: function() {
+    clickSinglePlayer: function() {
       Backbone.history.navigate('/home/play/single');
+      eventBus.trigger('playSinglePlayer');
     }
   });
 
