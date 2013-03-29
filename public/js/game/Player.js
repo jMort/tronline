@@ -1,6 +1,13 @@
 define(function(require) {
   var Player = function(nickname, x, y, speed, direction, color) {
     this.nickname = nickname;
+
+    // Make sure position is at a multiple of 10 before making a new node
+    while (x % 10)
+      x++;
+    while (y % 10)
+      y++;
+
     this.path = [[x, y]];
     this.speed = speed;
     this.direction = direction;
@@ -39,10 +46,15 @@ define(function(require) {
     };
 
     this.updateDirection = function(direction) {
+      if (direction === self.direction)
+        return;
+      
       if (direction !== null || typeof direction !== 'undefined') {
         var directions = ['N', 'E', 'S', 'W'];
+
         // Remove the current direction from possible directions
         directions.splice(directions.indexOf(self.direction), 1);
+
         // Remove the opposite of the current direction from possible directions
         var opposites = { 'N': 'S', 'S': 'N', 'E': 'W', 'W': 'E' };
         var opposite = opposites[self.direction];
@@ -56,6 +68,13 @@ define(function(require) {
       var x = self.path[last][0],
           y = self.path[last][1];
 
+      // Make sure position is at a multiple of 10 before making a new node
+      while (x % 10)
+        x++;
+      while (y % 10)
+        y++;
+
+      self.path[last] = [x, y];
       self.path.push([x, y]);
     };
 
@@ -67,9 +86,30 @@ define(function(require) {
       return self.path;
     };
 
+    this.getDirection = function() {
+      return self.direction;
+    };
+
     this.deactivate = function() {
+      if (!self.active)
+        return;
       self.active = false;
+      var oldColor = self.color;
       self.color = '#666';
+      var frame = 1;
+      var intervalID = setInterval(function() {
+        if (frame == 4)
+          clearInterval(intervalID);
+        if (self.color == oldColor)
+          self.color = '#666';
+        else
+          self.color = oldColor;
+        frame++;
+      }, 100);
+    };
+
+    this.getColor = function() {
+      return self.color;
     };
   };
 

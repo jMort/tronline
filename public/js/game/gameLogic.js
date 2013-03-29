@@ -1,12 +1,15 @@
 define(function(require) {
   var Player = require('game/Player');
 
-  var Game = function(width, height) {
-    this.player = new Player('', 50, 50, 5, 'E', '#BB2200');
+  var Game = function(width, height, players) {
+    this.players = players;
 
     var isCollision = function(point, paths) {
+      if (point[0] < 0 || point[0] > width || point[1] < 0 || point[1] > height)
+        return true;
+
       for (var path in paths) {
-        for (var i = 0; i < paths[path].length-2; i++) {
+        for (var i = 0; i < paths[path].length-1; i++) {
           var minY = paths[path][i][1],
               maxY = paths[path][i+1][1];
           if (paths[path][i+1][1] < paths[path][i][1]) {
@@ -36,14 +39,21 @@ define(function(require) {
 
     var self = this;
     this.update = function() {
-      if (isCollision(self.player.getHead(), [self.player.getPath()])) {
-        self.player.deactivate();
+      var paths = []
+      for (var i in self.players) {
+        paths.push(self.players[i].getPath());
       }
-      self.player.move();
+      for (var i in self.players) {
+        var player = self.players[i];
+        if (isCollision(player.getHead(), paths)) {
+          player.deactivate();
+        }
+        player.move();
+      }
     };
 
-    this.getPlayer = function() {
-      return self.player;
+    this.getPlayers = function() {
+      return self.players;
     };
   };
 
