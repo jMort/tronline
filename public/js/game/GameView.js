@@ -15,12 +15,15 @@ define(function(require) {
       DOWN  = 40;
   var WIDTH  = $(window).width();
       HEIGHT = $(window).height();
+  console.log(WIDTH, HEIGHT);
   var GameView = Backbone.View.extend({
     initialize: function() {
-      var player = new Player('', 45, parseInt(HEIGHT/2), 5, 'E', '#BB2200');
-      var aiPlayer = new Player('', WIDTH-45, parseInt(HEIGHT/2), 5, 'W', '#0022BB');
-      var aiLogic = new AI(WIDTH, HEIGHT);
-      var game = new Game(WIDTH, HEIGHT, [player, aiPlayer]);
+      var renderedWidth = WIDTH-20-(WIDTH%10);
+      var renderedHeight = HEIGHT-20-(HEIGHT%10);
+      var player = new Player('', 45, parseInt(renderedHeight/2), 5, 'E', '#BB2200');
+      var aiPlayer = new Player('', renderedWidth-45, parseInt(renderedHeight/2), 5, 'W', '#0022BB');
+      var aiLogic = new AI(renderedWidth, renderedHeight);
+      var game = new Game(renderedWidth, renderedHeight, [player, aiPlayer]);
       this.player = player;
       this.aiPlayer = aiPlayer;
       this.aiLogic = aiLogic;
@@ -37,6 +40,13 @@ define(function(require) {
       });
       this.render();
     },
+    translatePoints: function(points) {
+      var newPoints = [];
+      for (var i in points) {
+        newPoints.push([points[i][0]+10, points[i][1]+10]);
+      }
+      return newPoints;
+    },
     render: function() {
       this.$el.html(_.template(template)());
 
@@ -46,12 +56,24 @@ define(function(require) {
         height: HEIGHT
       });
 
+      var borderLayer = new Kinetic.Layer();
+      var leftLine = new Kinetic.Line({ points: [[5, 0], [5, HEIGHT]], stroke: '#FFF', strokeWidth: 10 });
+      var bottomLine = new Kinetic.Line({ points: [[5, HEIGHT-5-(HEIGHT%10)/2], [WIDTH, HEIGHT-5-(HEIGHT%10)/2]], stroke: '#FFF', strokeWidth: 10+(HEIGHT%10) });
+      var rightLine = new Kinetic.Line({ points: [[WIDTH-5-(WIDTH%10)/2, HEIGHT], [WIDTH-5-(WIDTH%10)/2, 0]], stroke: '#FFF', strokeWidth: 10+(WIDTH%10) });
+      var topLine = new Kinetic.Line({ points: [[WIDTH-(WIDTH%10), 5], [5, 5]], stroke: '#FFF', strokeWidth: 10 });
+      borderLayer.add(leftLine);
+      borderLayer.add(bottomLine);
+      borderLayer.add(rightLine);
+      borderLayer.add(topLine);
+
       var layer = new Kinetic.Layer();
+      stage.add(borderLayer);
       stage.add(layer);
 
       var aiPlayer = this.aiPlayer;
       var aiLogic = this.aiLogic;
       var game = this.game;
+      var self = this;
       var intervalId = setInterval(function() {
         layer.removeChildren();
         var players = game.getPlayers();
@@ -80,7 +102,7 @@ define(function(require) {
               }
             }
             var line = new Kinetic.Line({
-              points: points,
+              points: self.translatePoints(points),
               stroke: player.getColor(),
               strokeWidth: 10
             });
@@ -88,11 +110,14 @@ define(function(require) {
           }
         }
         layer.draw();
-        var direction = aiLogic.makeMove(aiPlayer.getPath(), aiPlayer.getDirection(), game.getPlayers()[0].getPath());
-        if (direction != 0)
-          aiPlayer.updateDirection(direction);
         game.update();
       }, 1000/30);
+
+      var intervalId2 = setInterval(function() {
+        var direction = aiLogic.makeMove(aiPlayer.getPath(), aiPlayer.getDirection(), game.getPlayers()[0].getPath());
+        if (['N', 'E', 'W', 'S'].indexOf(direction) != -1)
+          aiPlayer.updateDirection(direction);
+      }, 1000/60);
     }
   });
 

@@ -3,9 +3,9 @@ define(function(require) {
     this.nickname = nickname;
 
     // Make sure position is at a multiple of 10 before making a new node
-    while (x % 10)
+    while ((x-5) % 10)
       x++;
-    while (y % 10)
+    while ((y-5) % 10)
       y++;
 
     this.path = [[x, y]];
@@ -69,9 +69,9 @@ define(function(require) {
           y = self.path[last][1];
 
       // Make sure position is at a multiple of 10 before making a new node
-      while (x % 10)
+      while ((x-5) % 10)
         x++;
-      while (y % 10)
+      while ((y-5) % 10)
         y++;
 
       self.path[last] = [x, y];

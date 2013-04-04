@@ -4,7 +4,16 @@ define(function(require) {
   var Game = function(width, height, players) {
     this.players = players;
 
-    var isCollision = function(point, paths) {
+    var isCollision = function(point, direction, paths) {
+      if (direction === 'N')
+        point[1] -= 10;
+      else if (direction === 'E')
+        point[0] += 10;
+      else if (direction === 'S')
+        point[1] += 10;
+      else if (direction === 'W')
+        point[0] -= 10;
+
       if (point[0] < 0 || point[0] > width || point[1] < 0 || point[1] > height)
         return true;
 
@@ -25,11 +34,11 @@ define(function(require) {
 
           if (paths[path][i][0] === paths[path][i+1][0]) {
             // Vertical line
-            if (point[0] === paths[path][i][0] && point[1] > minY && point[1] < maxY)
+            if (point[0] === paths[path][i][0] && point[1] >= minY && point[1] <= maxY)
               return true;
           } else {
             // Horizontal line
-            if (point[1] === paths[path][i][1] && point[0] > minX && point[0] < maxX)
+            if (point[1] === paths[path][i][1] && point[0] >= minX && point[0] <= maxX)
               return true;
           }
         }
@@ -45,7 +54,8 @@ define(function(require) {
       }
       for (var i in self.players) {
         var player = self.players[i];
-        if (isCollision(player.getHead(), paths)) {
+        var point = player.getHead();
+        if (isCollision([point[0], point[1]], player.getDirection(), paths)) {
           player.deactivate();
         }
         player.move();
