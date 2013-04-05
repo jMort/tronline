@@ -9,7 +9,8 @@ define(function(require) {
     events: {
       'mouseover .imgButton': 'showButtonText',
       'mouseout  .imgButton': 'hideButtonText',
-      'click .imgButton:nth-child(1)': 'clickSinglePlayer'
+      'click .imgButton#singlePlayer': 'clickSinglePlayer',
+      'click .imgButton#headToHead': 'clickHeadToHead',
     },
     initialize: function(options) {
       this.socket = options.socket;
@@ -34,6 +35,10 @@ define(function(require) {
     clickSinglePlayer: function() {
       Backbone.history.navigate('/home/play/single');
       eventBus.trigger('playSinglePlayer');
+    },
+    clickHeadToHead: function() {
+      Backbone.history.navigate('/home/play/h2h');
+      eventBus.trigger('playHeadToHead');
     }
   });
 

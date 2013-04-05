@@ -66,15 +66,14 @@ define(function() {
       else if (isBlocked([point[0], point[1]], directions[1], [myPath, playerPath]))
         directions.splice(1, 1);
 
+      var direction = 0;
       if (isBlocked([point[0], point[1]], myDirection, [myPath, playerPath])) {
         direction = directions[Math.floor((Math.random()*directions.length))];
         if (typeof direction === 'undefined')
-          return 0;
-        else
-          return direction;
-      } else {
-        return 0;
+          direction = 0;
       }
+
+      return direction;
     };
   };
 

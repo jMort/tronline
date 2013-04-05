@@ -11,6 +11,7 @@ define(function(require) {
     this.path = [[x, y]];
     this.speed = speed;
     this.direction = direction;
+    this.nextDirection = null;
     this.color = color;
     this.active = true;
 
@@ -20,6 +21,14 @@ define(function(require) {
     this.move = function() {
       if (!self.active)
         return false;
+
+      if (self.nextDirection !== null) {
+        var distance = self.lastDistance();
+        if (self.lastDistance() === 10)
+          self.updateDirection(self.nextDirection);
+        if (self.lastDistance() >= 10)
+          self.nextDirection = null;
+      }
 
       // Change in position (defaults to no movement)
       var deltaPosition = [0, 0];
@@ -45,9 +54,22 @@ define(function(require) {
       return true;
     };
 
+    this.lastDistance = function() {
+      var last = self.path.length - 1;
+      return Math.abs(self.path[last][0] - self.path[last-1][0]) +
+             Math.abs(self.path[last][1] - self.path[last-1][1]);
+    };
+
     this.updateDirection = function(direction) {
-      if (direction === self.direction)
-        return;
+      if (direction === self.direction) {
+        return false;
+      } else if (self.path.length > 1) {
+        var distance = self.lastDistance();
+        if (distance == 0 || distance == 5) {
+          self.nextDirection = direction;
+          return false;
+        }
+      }
       
       if (direction !== null || typeof direction !== 'undefined') {
         var directions = ['N', 'E', 'S', 'W'];
@@ -76,6 +98,8 @@ define(function(require) {
 
       self.path[last] = [x, y];
       self.path.push([x, y]);
+
+      return true;
     };
 
     this.getHead = function() {
@@ -92,7 +116,7 @@ define(function(require) {
 
     this.deactivate = function() {
       if (!self.active)
-        return;
+        return false;
       self.active = false;
       var oldColor = self.color;
       self.color = '#666';
@@ -106,6 +130,8 @@ define(function(require) {
           self.color = oldColor;
         frame++;
       }, 100);
+
+      return true;
     };
 
     this.getColor = function() {
