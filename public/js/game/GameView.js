@@ -12,22 +12,30 @@ define(function(require) {
   var LEFT  = 37,
       UP    = 38,
       RIGHT = 39,
-      DOWN  = 40;
+      DOWN  = 40,
+      KEY_W = 87,
+      KEY_A = 65,
+      KEY_S = 83,
+      KEY_D = 68;
   var WIDTH  = $(window).width();
       HEIGHT = $(window).height();
   console.log(WIDTH, HEIGHT);
   var GameView = Backbone.View.extend({
     initialize: function() {
-      var renderedWidth = WIDTH-20-(WIDTH%10);
-      var renderedHeight = HEIGHT-20-(HEIGHT%10);
-      var player = new Player('', 45, parseInt(renderedHeight/2), 5, 'E', '#BB2200');
-      var aiPlayer = new Player('', renderedWidth-45, parseInt(renderedHeight/2), 5, 'W', '#0022BB');
-      var aiLogic = new AI(renderedWidth, renderedHeight);
-      var game = new Game(renderedWidth, renderedHeight, [player, aiPlayer]);
-      this.player = player;
-      this.aiPlayer = aiPlayer;
-      this.aiLogic = aiLogic;
-      this.game = game;
+      this.renderedWidth = WIDTH-20-(WIDTH%10);
+      this.renderedHeight = HEIGHT-20-(HEIGHT%10);
+      if (this.options.headToHead)
+        this.headToHeadInit();
+      else
+        this.singlePlayerInit();
+      this.render();
+    },
+    singlePlayerInit: function() {
+      var player = new Player('', 45, parseInt(this.renderedHeight/2), 5, 'E', '#BB2200');
+      var aiLogic = new AI(this.renderedWidth, this.renderedHeight);
+      var aiPlayer = new Player('', this.renderedWidth-45, parseInt(this.renderedHeight/2), 5, 'W', '#0022BB', aiLogic);
+      this.players = [player, aiPlayer];
+      this.game = new Game(this.renderedWidth, this.renderedHeight, this.players);
       $(window).bind('keydown', function(e) {
         if (e.keyCode == LEFT)
           player.updateDirection('W');
@@ -37,8 +45,33 @@ define(function(require) {
           player.updateDirection('E');
         else if (e.keyCode == DOWN)
           player.updateDirection('S');
+        else
+          console.log(e.keyCode);
       });
-      this.render();
+    },
+    headToHeadInit: function() {
+      var player1 = new Player('', 45, parseInt(this.renderedHeight/2), 5, 'E', '#BB2200');
+      var player2 = new Player('', this.renderedWidth-45, parseInt(this.renderedHeight/2), 5, 'W', '#0022BB');
+      this.players = [player1, player2];
+      this.game = new Game(this.renderedWidth, this.renderedHeight, this.players);
+      $(window).bind('keydown', function(e) {
+        if (e.keyCode == LEFT)
+          player2.updateDirection('W');
+        else if (e.keyCode == UP)
+          player2.updateDirection('N');
+        else if (e.keyCode == RIGHT)
+          player2.updateDirection('E');
+        else if (e.keyCode == DOWN)
+          player2.updateDirection('S');
+        else if (e.keyCode == KEY_W)
+          player1.updateDirection('N');
+        else if (e.keyCode == KEY_A)
+          player1.updateDirection('W');
+        else if (e.keyCode == KEY_S)
+          player1.updateDirection('S');
+        else if (e.keyCode == KEY_D)
+          player1.updateDirection('E');
+      });
     },
     translatePoints: function(points) {
       var newPoints = [];
@@ -70,8 +103,6 @@ define(function(require) {
       stage.add(borderLayer);
       stage.add(layer);
 
-      var aiPlayer = this.aiPlayer;
-      var aiLogic = this.aiLogic;
       var game = this.game;
       var self = this;
       var intervalId = setInterval(function() {
@@ -112,12 +143,6 @@ define(function(require) {
         layer.draw();
         game.update();
       }, 1000/30);
-
-      var intervalId2 = setInterval(function() {
-        var direction = aiLogic.makeMove(aiPlayer.getPath(), aiPlayer.getDirection(), game.getPlayers()[0].getPath());
-        if (['N', 'E', 'W', 'S'].indexOf(direction) != -1)
-          aiPlayer.updateDirection(direction);
-      }, 1000/60);
     }
   });
 

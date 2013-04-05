@@ -58,7 +58,7 @@ define(function(require) {
         if (isCollision([point[0], point[1]], player.getDirection(), paths)) {
           player.deactivate();
         }
-        player.move();
+        player.move(paths);
       }
     };
 

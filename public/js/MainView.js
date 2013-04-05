@@ -59,6 +59,12 @@ define(function(require) {
         self.chatView.destroy();
         self.showSinglePlayer();
       });
+      eventBus.on('playHeadToHead', function() {
+        self.homeView.destroy();
+        self.sidebarView.destroy();
+        self.chatView.destroy();
+        self.showHeadToHead();
+      });
     },
     render: function() {
       this.$el = $('.mainView');
@@ -90,6 +96,12 @@ define(function(require) {
       this.$el.html('');
       this.$el.append('<div class="gameView"></div>');
       var gameView = new GameView({ el: this.$('.gameView') });
+      this.gameView = gameView;
+    },
+    showHeadToHead: function() {
+      this.$el.html('');
+      this.$el.append('<div class="gameView"></div>');
+      var gameView = new GameView({ el: this.$('.gameView'), headToHead: true });
       this.gameView = gameView;
     }
   });

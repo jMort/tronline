@@ -1,5 +1,5 @@
 define(function(require) {
-  var Player = function(nickname, x, y, speed, direction, color) {
+  var Player = function(nickname, x, y, speed, direction, color, logic) {
     this.nickname = nickname;
 
     // Make sure position is at a multiple of 10 before making a new node
@@ -18,7 +18,7 @@ define(function(require) {
     var self = this;
 
     // Advances the player's position for one frame based on the player's speed
-    this.move = function() {
+    this.move = function(paths) {
       if (!self.active)
         return false;
 
@@ -50,6 +50,14 @@ define(function(require) {
         self.path.push([x, y]);
       else
         self.path[last] = [x, y];
+
+      // After moving the player in its current direction, check if the player has logic
+      // attached to it (meaning it's an AI), and now let it make a decision to change directions.
+      if (typeof logic !== 'undefined' && typeof logic === 'object') {
+        var direction = logic.makeMove(self.path, self.direction, paths[0]);
+        if (['N', 'E', 'W', 'S'].indexOf(direction) != -1)
+          self.updateDirection(direction);
+      }
 
       return true;
     };
