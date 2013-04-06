@@ -11,7 +11,7 @@ define(function(require) {
   var LoginView = Backbone.View.extend({
     events: {
       'click div.loginBox button[name="enter"]' : 'enter',
-      'keypress div.loginBox input[name="name"]': 'onKeypress' 
+      'keypress div.loginBox input[name="name"]': 'onKeypress'
     },
     initialize: function(options) {
       this.socket = options.socket;

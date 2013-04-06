@@ -59,32 +59,43 @@ function logDataUsage() {
   console.log('Sent: ' + sent + 'KB Received: ' + received + 'KB Total: ' + total);
 }
 
-var numPlayers = 0;
 var players = {};
+
+var socketIdToSocket = {};
+var socketIdToPlayerName = {};
 
 io.sockets.on('connection', function(socket) {
   console.log('User connected');
-  numPlayers++;
-  var name;
-  io.sockets.emit('numPlayersOnline', numPlayers);
+  socketIdToSocket[socket.id] = socket;
+  io.sockets.emit('numPlayersOnline', Object.keys(socketIdToSocket).length);
   socket.on('checkLogin', function(nickname) {
     if (players[nickname]) {
       socket.emit('loginUnsuccessful');
     } else {
       socket.emit('loginSuccessful');
       players[nickname] = true;
-      name = nickname;
+      socketIdToPlayerName[socket.id] = nickname;
+      io.sockets.emit('playerListUpdate', Object.keys(players));
     }
+  });
+  socket.on('getPlayerList', function() {
+    socket.emit('playerListUpdate', Object.keys(players));
+  });
+  socket.on('sendMessage', function(message) {
+    var name = socketIdToPlayerName[socket.id];
+    io.sockets.emit('receiveMessage', name+': '+message);
   });
   socket.on('disconnect', function() {
     console.log('User disconnected');
-    numPlayers--;
+    delete socketIdToSocket[socket.id];
     for (var i in players) {
-      if (i == name) {
+      if (i == socketIdToPlayerName[socket.id]) {
         delete players[i];
+        delete socketIdToPlayerName[socket.id];
+        io.sockets.emit('playerListUpdate', Object.keys(players));
         break;
       }
     }
-    io.sockets.emit('numPlayersOnline', numPlayers);
+    io.sockets.emit('numPlayersOnline', Object.keys(socketIdToSocket).length);
   });
 });

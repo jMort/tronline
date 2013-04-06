@@ -21,10 +21,10 @@ define(function(require) {
       HEIGHT = $(window).height();
   console.log(WIDTH, HEIGHT);
   var GameView = Backbone.View.extend({
-    initialize: function() {
+    initialize: function(options) {
       this.renderedWidth = WIDTH-20-(WIDTH%10);
       this.renderedHeight = HEIGHT-20-(HEIGHT%10);
-      if (this.options.headToHead)
+      if (options.headToHead)
         this.headToHeadInit();
       else
         this.singlePlayerInit();
