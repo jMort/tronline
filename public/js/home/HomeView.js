@@ -5,12 +5,15 @@ define(function(require) {
       eventBus = require('eventBus'),
       template = require('text!home/home.html');
 
+  require('slide.jquery');
+
   var HomeView = Backbone.View.extend({
     events: {
       'mouseover .imgButton': 'showButtonText',
       'mouseout  .imgButton': 'hideButtonText',
       'click .imgButton#singlePlayer': 'clickSinglePlayer',
       'click .imgButton#headToHead': 'clickHeadToHead',
+      'click .imgButton#onlineMultiplayer': 'clickOnlineMultiplayer'
     },
     initialize: function(options) {
       this.socket = options.socket;
@@ -39,7 +42,13 @@ define(function(require) {
     clickHeadToHead: function() {
       Backbone.history.navigate('/home/play/h2h');
       eventBus.trigger('playHeadToHead');
-    }
+    },
+    clickOnlineMultiplayer: function() {
+      Backbone.history.navigate('/home/create/multiplayer');
+      this.$el.slideLeft(500, function() {
+        eventBus.trigger('createMultiplayer');
+      });
+  }
   });
 
   return HomeView;

@@ -1,13 +1,14 @@
 define(function(require) {
-  var $           = require('jquery'),
-      _           = require('underscore'),
-      Backbone    = require('backbone'),
-      eventBus    = require('eventBus'),
-      LoginView   = require('login/LoginView'),
-      HomeView    = require('home/HomeView'),
-      SidebarView = require('home/SidebarView'),
-      ChatView    = require('home/ChatView'),
-      GameView    = require('game/GameView');
+  var $                    = require('jquery'),
+      _                    = require('underscore'),
+      Backbone             = require('backbone'),
+      eventBus             = require('eventBus'),
+      LoginView            = require('login/LoginView'),
+      HomeView             = require('home/HomeView'),
+      SidebarView          = require('home/SidebarView'),
+      ChatView             = require('home/ChatView'),
+      GameView             = require('game/GameView'),
+      MultiplayerSetupView = require('create/MultiplayerSetupView');
 
   var baseURL;
   var MainView = Backbone.View.extend({
@@ -65,6 +66,10 @@ define(function(require) {
         self.chatView.destroy();
         self.showHeadToHead();
       });
+      eventBus.on('createMultiplayer', function() {
+        self.homeView.destroy();
+        self.showMultiplayerSetup();
+      });
     },
     render: function() {
       this.$el = $('.mainView');
@@ -103,6 +108,11 @@ define(function(require) {
       this.$el.append('<div class="gameView"></div>');
       var gameView = new GameView({ el: this.$('.gameView'), headToHead: true });
       this.gameView = gameView;
+    },
+    showMultiplayerSetup: function() {
+      this.$('.sidebarView').after('<div class="multiplayerSetupView"></div>');
+      var multiplayerSetupView = new MultiplayerSetupView({ el: this.$('.multiplayerSetupView') });
+      this.multiplayerSetupView = multiplayerSetupView;
     }
   });
 

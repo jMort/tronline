@@ -308,3 +308,41 @@ div.chatView #messages {
     height: 210px;
     overflow-y: auto;
 }
+
+/* MultiplayerSetupView */
+div.multiplayerSetupView {
+    margin-right: 220px;
+    color: #DDD;
+}
+h2 {
+    text-align: center;
+    color: #DDD;
+}
+div.multiplayerSetupView table tbody tr td:nth-child(1) {
+    text-align: right;
+}
+div.multiplayerSetupView a {
+    color: rgb(0, 0, 238);
+}
+div.multiplayerSetupView button {
+    float: right;
+    background-color: #6F6;
+    padding: 5px 12px;
+    font-family: "Courier New";
+    font-size: 12pt;
+    font-weight: bold;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    border: 1px solid #6F6;
+}
+div.multiplayerSetupView button:hover {
+    color: #111;
+    background-color: #4D4;
+    border: 1px solid #0F0;
+    -webkit-transition: background-color 0.15s linear, border 0.15s linear;
+    -moz-transition: background-color 0.15s linear, border 0.15s linear;
+    -o-transition: background-color 0.15s linear, border 0.15s linear;
+    transition: background-color 0.15s linear, border 0.15s linear;
+    cursor: pointer;
+}
