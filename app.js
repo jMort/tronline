@@ -85,6 +85,15 @@ io.sockets.on('connection', function(socket) {
     var name = socketIdToPlayerName[socket.id];
     io.sockets.emit('receiveMessage', name+': '+message);
   });
+  socket.on('invitePlayer', function(nickname) {
+    var fromNickname = socketIdToPlayerName[socket.id];
+    for (var i in socketIdToPlayerName) {
+      if (socketIdToPlayerName[i] === nickname) {
+        socketIdToSocket[i].emit('invitePlayer', fromNickname);
+        break;
+      }
+    }
+  });
   socket.on('disconnect', function() {
     console.log('User disconnected');
     delete socketIdToSocket[socket.id];

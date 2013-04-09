@@ -8,7 +8,8 @@ define(function(require) {
       SidebarView          = require('home/SidebarView'),
       ChatView             = require('home/ChatView'),
       GameView             = require('game/GameView'),
-      MultiplayerSetupView = require('create/MultiplayerSetupView');
+      MultiplayerSetupView = require('create/MultiplayerSetupView'),
+      NotificationView     = require('home/NotificationView');
 
   var baseURL;
   var MainView = Backbone.View.extend({
@@ -35,13 +36,19 @@ define(function(require) {
     },
     onSocketIOLoaded: function(io) {
       this.socket = io.connect(baseURL);
+      var self = this;
       this.socket.on('connect', function() {
         console.log('Socket connected');
+      });
+      this.socket.on('invitePlayer', function(fromNickname) {
+        console.log(fromNickname);
+        self.$el.append('<div class="notificationView"></div>');
+        var notificationView = new NotificationView({ el: self.$('.notificationView'),
+                                                      socket: self.socket, nickname: fromNickname });
       });
       this.render();
       this.showLogin();
       this.nickname = null;
-      var self = this;
       eventBus.on('showLogin', function() {
         self.loginView.destroy();
         self.$el.html('');
@@ -69,6 +76,17 @@ define(function(require) {
       eventBus.on('createMultiplayer', function() {
         self.homeView.destroy();
         self.showMultiplayerSetup();
+      });
+      eventBus.on('invitePlayer', function(player) {
+        var nickname = $(player).text();
+        if (self.multiplayerSetupView && nickname !== self.nickname) {
+          $(player).css('color', 'rgb(255,135,55)');
+          self.socket.emit('invitePlayer', nickname);
+        } else if (nickname === self.nickname) {
+          alert('You cannot invite yourself to a game!');
+        } else {
+          alert('You must create an online multiplayer game first!');
+        }
       });
     },
     render: function() {

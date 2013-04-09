@@ -140,6 +140,10 @@ div.loginBox button {
     -moz-border-radius: 4px;
     border-radius: 4px;
     border: 1px solid #CCC;
+    -webkit-transition: background-color 0.15s linear, border 0.15s linear;
+    -moz-transition: background-color 0.15s linear, border 0.15s linear;
+    -o-transition: background-color 0.15s linear, border 0.15s linear;
+    transition: background-color 0.15s linear, border 0.15s linear;
 }
 div.loginBox button:hover {
     color: #111;
@@ -228,6 +232,9 @@ div.sidebarView {
     background-color: #666;
     background-color: rgba(255, 255, 255, 0.2);
 }
+div.sidebarView tbody#playersOnline tr td:nth-child(1) {
+    cursor: pointer;
+}
 
 /* ChatView */
 div.chatView {
@@ -293,6 +300,10 @@ div.chatView button {
     -moz-border-radius: 4px;
     border-radius: 4px;
     border: 1px solid #CCC;
+    -webkit-transition: background-color 0.15s linear, border 0.15s linear;
+    -moz-transition: background-color 0.15s linear, border 0.15s linear;
+    -o-transition: background-color 0.15s linear, border 0.15s linear;
+    transition: background-color 0.15s linear, border 0.15s linear;
 }
 div.chatView button:hover {
     color: #111;
@@ -335,6 +346,10 @@ div.multiplayerSetupView button {
     -moz-border-radius: 4px;
     border-radius: 4px;
     border: 1px solid #6F6;
+    -webkit-transition: background-color 0.15s linear, border 0.15s linear;
+    -moz-transition: background-color 0.15s linear, border 0.15s linear;
+    -o-transition: background-color 0.15s linear, border 0.15s linear;
+    transition: background-color 0.15s linear, border 0.15s linear;
 }
 div.multiplayerSetupView button:hover {
     color: #111;
@@ -345,4 +360,50 @@ div.multiplayerSetupView button:hover {
     -o-transition: background-color 0.15s linear, border 0.15s linear;
     transition: background-color 0.15s linear, border 0.15s linear;
     cursor: pointer;
+}
+
+/* NotificationView */
+div.notificationView div {
+    background-color: rgba(100, 100, 100, 0.6);
+}
+div.notificationView div button {
+    background-color: #CCC;
+    padding: 5px 12px;
+    font-family: "Courier New";
+    font-size: 14pt;
+    font-weight: bold;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    border: 1px solid #CCC;
+    -webkit-transition: background-color 0.15s linear, border 0.15s linear;
+    -moz-transition: background-color 0.15s linear, border 0.15s linear;
+    -o-transition: background-color 0.15s linear, border 0.15s linear;
+    transition: background-color 0.15s linear, border 0.15s linear;
+}
+div.notificationView div button:hover {
+    color: #111;
+    background-color: #AAA;
+    border: 1px solid #AAA;
+    -webkit-transition: background-color 0.15s linear, border 0.15s linear;
+    -moz-transition: background-color 0.15s linear, border 0.15s linear;
+    -o-transition: background-color 0.15s linear, border 0.15s linear;
+    transition: background-color 0.15s linear, border 0.15s linear;
+    cursor: pointer;
+}
+div.notificationView div button.green {
+    background-color: #6F6;
+    border: 1px solid #6F6;
+}
+div.notificationView div button.green:hover {
+    background-color: #4D4;
+    border: 1px solid #0F0;
+}
+div.notificationView div button.red {
+    background-color: #FA6;
+    border: 1px solid #FA6;
+}
+div.notificationView div button.red:hover {
+    background-color: #FA4;
+    border: 1px solid #F61;
 }

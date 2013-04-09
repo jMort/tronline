@@ -6,10 +6,16 @@ define(function(require) {
       template = require('text!home/sidebar.html');
 
   var SidebarView = Backbone.View.extend({
+    events: {
+      'click tbody#playersOnline tr td h3': 'clickPlayer'
+    },
     initialize: function(options) {
       this.socket = options.socket;
-      var playerTmpl = '<tr><td><h3 class="textGlow" style="margin: 0;"><%= name %></h3></td></tr>';
       var self = this;
+      this.socket.on('inviteAccepted', function(nickname) {
+        self.$('tbody#playersOnline tr td h3:contains("'+nickname+'")').css('color', 'rgb(114,255,79)');
+      });
+      var playerTmpl = '<tr><td><h3 class="textGlow" style="margin: 0;"><%= name %></h3></td></tr>';
       this.socket.emit('getPlayerList');
       this.socket.on('playerListUpdate', function(players) {
         self.$('#playersOnline').html('');
@@ -20,6 +26,10 @@ define(function(require) {
     },
     render: function() {
       this.$el.hide().html(_.template(template)()).fadeIn(500);
+    },
+    clickPlayer: function(e) {
+      //$(e.currentTarget).css('color', 'rgb(255,135,55)');
+      eventBus.trigger('invitePlayer', $(e.currentTarget));
     }
   });
 
