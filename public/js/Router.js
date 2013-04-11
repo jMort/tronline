@@ -6,13 +6,17 @@ define(function(require) {
 
   var Router = Backbone.Router.extend({
     routes: {
-      //'home': 'home',
+      'home': 'home',
+      'home/create/multiplayer': 'multiplayerSetup',
 
       '*action': 'defaultAction'
     },
-    /*home: function() {
+    home: function() {
       eventBus.trigger('showLobby');
-    },*/
+    },
+    multiplayerSetup: function() {
+      eventBus.trigger('createMultiplayer');
+    },
     defaultAction: function(action) {
       Backbone.history.navigate('/');
       eventBus.trigger('showLogin');

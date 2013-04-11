@@ -11,6 +11,8 @@ define(function(require) {
       MultiplayerSetupView = require('create/MultiplayerSetupView'),
       NotificationView     = require('home/NotificationView');
 
+  require('slide.jquery');
+
   var baseURL;
   var MainView = Backbone.View.extend({
     initialize: function() {
@@ -47,7 +49,6 @@ define(function(require) {
                                                       socket: self.socket, nickname: fromNickname });
       });
       this.render();
-      this.showLogin();
       this.nickname = null;
       eventBus.on('showLogin', function() {
         self.loginView.destroy();
@@ -55,27 +56,55 @@ define(function(require) {
         self.appendTitle();
         self.showLogin();
       });
-      eventBus.on('showLobby', function(data) {
-        var nickname = data.nickname;
-        self.nickname = nickname;
+      eventBus.on('showLobby', function(nickname) {
+        if (nickname)
+          self.nickname = nickname;
         self.loginView.destroy();
-        self.showLobby(nickname);
+        var normal = true;
+        if (self.multiplayerSetupView) {
+          normal = false;
+          self.multiplayerSetupView.$el.slideLeft(500, function() {
+            self.multiplayerSetupView.destroy();
+            delete self.multiplayerSetupView;
+            self.showHome(self.nickname);
+          });
+        } else if (self.gameView) {
+          normal = false;
+          self.gameView.$el.fadeOut(500, function() {
+            self.gameView.destroy();
+            delete self.gameView;
+            self.appendTitle();
+            self.$('h1').css('margin-right', '220px');
+            self.showSidebarAndChat(self.nickname);
+            self.showHome(self.nickname);
+          });
+        }
+        if (normal) {
+          self.showSidebarAndChat(self.nickname);
+          self.showHome(self.nickname);
+        }
       });
       eventBus.on('playSinglePlayer', function() {
-        self.homeView.destroy();
-        self.sidebarView.destroy();
-        self.chatView.destroy();
-        self.showSinglePlayer();
+        self.homeView.$el.slideLeft(500, function() {
+          self.homeView.destroy();
+          self.sidebarView.destroy();
+          self.chatView.destroy();
+          self.showSinglePlayer();
+        });
       });
       eventBus.on('playHeadToHead', function() {
-        self.homeView.destroy();
-        self.sidebarView.destroy();
-        self.chatView.destroy();
-        self.showHeadToHead();
+        self.homeView.$el.slideLeft(500, function() {
+          self.homeView.destroy();
+          self.sidebarView.destroy();
+          self.chatView.destroy();
+          self.showHeadToHead();
+        });
       });
       eventBus.on('createMultiplayer', function() {
-        self.homeView.destroy();
-        self.showMultiplayerSetup();
+        self.homeView.$el.slideLeft(500, function() {
+          self.homeView.destroy();
+          self.showMultiplayerSetup();
+        });
       });
       eventBus.on('invitePlayer', function(player) {
         var nickname = $(player).text();
@@ -92,6 +121,7 @@ define(function(require) {
     render: function() {
       this.$el = $('.mainView');
       this.appendTitle();
+      this.showLogin();
     },
     appendTitle: function() {
       this.$el.append('<h1>Tronline</h1>');
@@ -101,17 +131,19 @@ define(function(require) {
       var loginView = new LoginView({ el: this.$('.loginView'), socket: this.socket });
       this.loginView = loginView;
     },
-    showLobby: function(nickname) {
-      this.$el.append('<div class="sidebarView"></div>');
+    showHome: function(nickname) {
       this.$el.append('<div class="homeView"></div>');
-      this.$el.append('<div class="chatView"></div>');
       var homeView = new HomeView({ el: this.$('.homeView'), socket: this.socket,
                                     nickname: nickname });
+      this.homeView = homeView;
+    },
+    showSidebarAndChat: function(nickname) {
+      this.$el.append('<div class="sidebarView"></div>');
+      this.$el.append('<div class="chatView"></div>');
       var sidebarView = new SidebarView({ el: this.$('.sidebarView'), socket: this.socket,
                                           nickname: nickname });
       var chatView = new ChatView({ el: this.$('.chatView'), socket: this.socket,
                                    nickname: nickname });
-      this.homeView = homeView;
       this.sidebarView = sidebarView;
       this.chatView = chatView;
     },
@@ -128,7 +160,7 @@ define(function(require) {
       this.gameView = gameView;
     },
     showMultiplayerSetup: function() {
-      this.$('.sidebarView').after('<div class="multiplayerSetupView"></div>');
+      this.$el.append('<div class="multiplayerSetupView"></div>');
       var multiplayerSetupView = new MultiplayerSetupView({ el: this.$('.multiplayerSetupView') });
       this.multiplayerSetupView = multiplayerSetupView;
     }

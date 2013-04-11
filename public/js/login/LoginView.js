@@ -49,7 +49,7 @@ define(function(require) {
         setTimeout(function() {
           Backbone.history.navigate('/home', { replace: true });
           self.$el.slideLeft(500, function() {
-            eventBus.trigger('showLobby', { nickname: nickname });
+            eventBus.trigger('showLobby', nickname);
           });
           $('h1').animate({
             'margin-right': '220px'

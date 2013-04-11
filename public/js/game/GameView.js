@@ -81,7 +81,7 @@ define(function(require) {
       return newPoints;
     },
     render: function() {
-      this.$el.html(_.template(template)());
+      this.$el.hide().html(_.template(template)()).fadeIn(500);
 
       var stage = new Kinetic.Stage({
         container: 'gameCanvasContainer',

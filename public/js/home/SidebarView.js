@@ -28,7 +28,6 @@ define(function(require) {
       this.$el.hide().html(_.template(template)()).fadeIn(500);
     },
     clickPlayer: function(e) {
-      //$(e.currentTarget).css('color', 'rgb(255,135,55)');
       eventBus.trigger('invitePlayer', $(e.currentTarget));
     }
   });

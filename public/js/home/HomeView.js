@@ -45,9 +45,7 @@ define(function(require) {
     },
     clickOnlineMultiplayer: function() {
       Backbone.history.navigate('/home/create/multiplayer');
-      this.$el.slideLeft(500, function() {
-        eventBus.trigger('createMultiplayer');
-      });
+      eventBus.trigger('createMultiplayer');
   }
   });
 

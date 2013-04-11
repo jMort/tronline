@@ -365,7 +365,7 @@ div.multiplayerSetupView button:hover {
 /* NotificationView */
 div.notificationView div {
     position: fixed;
-    bottom: -150px;
+    bottom: -175px;
     right: 0;
     width: 310px;
     height: 150px;
@@ -416,6 +416,6 @@ div.notificationView div button.red {
     border: 1px solid #FA6;
 }
 div.notificationView div button.red:hover {
-    background-color: #FA4;
+    background-color: #F84;
     border: 1px solid #F61;
 }
