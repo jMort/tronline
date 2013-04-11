@@ -364,7 +364,19 @@ div.multiplayerSetupView button:hover {
 
 /* NotificationView */
 div.notificationView div {
+    position: fixed;
+    bottom: -150px;
+    right: 0;
+    width: 310px;
+    height: 150px;
+    border: 2px solid black;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
     background-color: rgba(100, 100, 100, 0.6);
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
 }
 div.notificationView div button {
     background-color: #CCC;

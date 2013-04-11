@@ -13,6 +13,9 @@ define(function(require) {
     },
     render: function() {
       this.$el.hide().html(_.template(template)({ nickname: this.nickname })).fadeIn(500);
+      this.$el.add(this.$('div')).animate({
+        'bottom': 0
+      }, 500);
     }
   });
 
