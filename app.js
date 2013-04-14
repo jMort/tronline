@@ -75,11 +75,11 @@ io.sockets.on('connection', function(socket) {
       socket.emit('loginSuccessful');
       players[nickname] = true;
       socketIdToPlayerName[socket.id] = nickname;
-      io.sockets.emit('playerListUpdate', Object.keys(players));
+      io.sockets.emit('playerListUpdate', Object.keys(players).sort());
     }
   });
   socket.on('getPlayerList', function() {
-    socket.emit('playerListUpdate', Object.keys(players));
+    socket.emit('playerListUpdate', Object.keys(players).sort());
   });
   socket.on('sendMessage', function(message) {
     var name = socketIdToPlayerName[socket.id];
