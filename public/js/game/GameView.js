@@ -45,8 +45,6 @@ define(function(require) {
           player.updateDirection('E');
         else if (e.keyCode == DOWN)
           player.updateDirection('S');
-        else
-          console.log(e.keyCode);
       });
     },
     headToHeadInit: function() {
@@ -143,6 +141,11 @@ define(function(require) {
         layer.draw();
         game.update();
       }, 1000/30);
+      this.intervalId = intervalId;
+    },
+    teardown: function() {
+      clearInterval(this.intervalId);
+      $(window).unbind('keydown');
     }
   });
 

@@ -22,13 +22,14 @@ define(function(require) {
       }, 500);
     },
     clickAccept: function() {
-      console.log('accept');
-      this.$el.add(this.$('div')).animate({
-        'bottom': -175
-      }, 500);
+      eventBus.trigger('acceptInvite', this.nickname);
+      this.slideDown();
     },
     clickDecline: function() {
-      console.log('decline');
+      eventBus.trigger('declineInvite', this.nickname);
+      this.slideDown();
+    },
+    slideDown: function() {
       this.$el.add(this.$('div')).animate({
         'bottom': -175
       }, 500);

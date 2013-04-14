@@ -185,6 +185,27 @@ span.welcomeMessage {
     -moz-text-shadow: 0px 0px 15px rgba(220, 220, 220, .75);
     text-shadow: 0px 0px 15px rgba(220, 220, 220, .75);
 }
+.textGlowGreen {
+    color: rgb(114, 255, 79);
+    font-weight: bold;
+    -webkit-text-shadow: 0px 0px 15px rgba(114, 255, 79, .75);
+    -moz-text-shadow: 0px 0px 15px rgba(114, 255, 79, .75);
+    text-shadow: 0px 0px 15px rgba(114, 255, 79, .75);
+}
+.textGlowOrange {
+    color: rgb(255, 135, 55);
+    font-weight: bold;
+    -webkit-text-shadow: 0px 0px 15px rgba(255, 135, 55, .75);
+    -moz-text-shadow: 0px 0px 15px rgba(255, 135, 55, .75);
+    text-shadow: 0px 0px 15px rgba(255, 135, 55, .75);
+}
+.textGlowRed {
+    color: rgb(238, 57, 57);
+    font-weight: bold;
+    -webkit-text-shadow: 0px 0px 15px rgba(238, 57, 57, .75);
+    -moz-text-shadow: 0px 0px 15px rgba(238, 57, 57, .75);
+    text-shadow: 0px 0px 15px rgba(238, 57, 57, .75);
+}
 div.buttonsContainer {
     text-align: center;
 }

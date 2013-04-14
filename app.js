@@ -94,6 +94,24 @@ io.sockets.on('connection', function(socket) {
       }
     }
   });
+  socket.on('acceptInvite', function(fromNickname) {
+    var nickname = socketIdToPlayerName[socket.id];
+    console.log(nickname+' accepted '+fromNickname+"'s invite");
+    for (var i in socketIdToPlayerName) {
+      if (socketIdToPlayerName[i] === fromNickname) {
+        socketIdToSocket[i].emit('inviteAccepted', nickname);
+      }
+    }
+  });
+  socket.on('declineInvite', function(fromNickname) {
+    var nickname = socketIdToPlayerName[socket.id];
+    console.log(nickname+' declined '+fromNickname+"'s invite");
+    for (var i in socketIdToPlayerName) {
+      if (socketIdToPlayerName[i] === fromNickname) {
+        socketIdToSocket[i].emit('inviteDeclined', nickname);
+      }
+    }
+  });
   socket.on('disconnect', function() {
     console.log('User disconnected');
     delete socketIdToSocket[socket.id];

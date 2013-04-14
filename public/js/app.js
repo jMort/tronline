@@ -16,10 +16,6 @@ define(function(require) {
       this.unbind();
     };
 
-    window.onbeforeunload = function(){
-      return 'All progress will be lost if you refresh the page.';
-    }
-
     new MainView();
   };
 

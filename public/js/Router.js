@@ -4,6 +4,7 @@ define(function(require) {
       Backbone = require('backbone'),
       eventBus = require('eventBus');
 
+  var initialized = false;
   var Router = Backbone.Router.extend({
     routes: {
       'home': 'home',
@@ -12,12 +13,19 @@ define(function(require) {
       '*action': 'defaultAction'
     },
     home: function() {
-      eventBus.trigger('showLobby');
+      if (initialized)
+        eventBus.trigger('showLobby');
+      else
+        this.defaultAction();
     },
     multiplayerSetup: function() {
-      eventBus.trigger('createMultiplayer');
+      if (initialized)
+        eventBus.trigger('createMultiplayer');
+      else
+        this.defaultAction();
     },
     defaultAction: function(action) {
+      initialized = true;
       Backbone.history.navigate('/');
       eventBus.trigger('showLogin');
     }

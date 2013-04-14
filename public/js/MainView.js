@@ -3,6 +3,7 @@ define(function(require) {
       _                    = require('underscore'),
       Backbone             = require('backbone'),
       eventBus             = require('eventBus'),
+      login                = require('login/loginLogic'),
       LoginView            = require('login/LoginView'),
       HomeView             = require('home/HomeView'),
       SidebarView          = require('home/SidebarView'),
@@ -35,12 +36,29 @@ define(function(require) {
       $.getScript('/socket.io/socket.io.js', function() {
         self.onSocketIOLoaded(io);
       });
+
+      window.onbeforeunload = function(){
+        if (self.gameView)
+          return 'All progress will be lost if you refresh the page.';
+      }
     },
     onSocketIOLoaded: function(io) {
       this.socket = io.connect(baseURL);
       var self = this;
       this.socket.on('connect', function() {
         console.log('Socket connected');
+      });
+      this.socket.on('reconnect', function() {
+        console.log('Socket reconnected');
+        login(self.socket, self.nickname, function() {
+          // Successful
+          // If login is successful after reconnect, do nothing.
+        }, function() {
+          // Unsuccessful
+          // If login is unsuccessful after reconnect, someone else must be online with same name.
+          // Redirect to main page
+          console.log(window.location.href);
+        });
       });
       this.socket.on('invitePlayer', function(fromNickname) {
         console.log(fromNickname);
@@ -71,6 +89,7 @@ define(function(require) {
         } else if (self.gameView) {
           normal = false;
           self.gameView.$el.fadeOut(500, function() {
+            self.gameView.teardown();
             self.gameView.destroy();
             delete self.gameView;
             self.appendTitle();
@@ -109,13 +128,19 @@ define(function(require) {
       eventBus.on('invitePlayer', function(player) {
         var nickname = $(player).text();
         if (self.multiplayerSetupView && nickname !== self.nickname) {
-          $(player).css('color', 'rgb(255,135,55)');
+          $(player).removeClass('textGlow textGlowGreen textGlowRed').addClass('textGlowOrange');
           self.socket.emit('invitePlayer', nickname);
         } else if (nickname === self.nickname) {
           alert('You cannot invite yourself to a game!');
         } else {
           alert('You must create an online multiplayer game first!');
         }
+      });
+      eventBus.on('acceptInvite', function(nickname) {
+        self.socket.emit('acceptInvite', nickname);
+      });
+      eventBus.on('declineInvite', function(nickname) {
+        self.socket.emit('declineInvite', nickname);
       });
     },
     render: function() {

@@ -3,7 +3,8 @@ define(function(require) {
       _        = require('underscore'),
       Backbone = require('backbone'),
       eventBus = require('eventBus'),
-      template = require('text!login/login.html');
+      template = require('text!login/login.html'),
+      login    = require('login/loginLogic');
 
   require('slide.jquery');
   require('wiggle.jquery');
@@ -41,9 +42,9 @@ define(function(require) {
     },
     enter: function() {
       var nickname = this.$('div.loginBox input[name="name"]').val().toUpperCase();
-      this.socket.emit('checkLogin', nickname);
       var self = this;
-      this.socket.on('loginSuccessful', function() {
+      login(this.socket, nickname, function() {
+        // Successful
         self.$('div.loginBox').removeClass('glowBlue').addClass('glowGreen');
         self.$('div.loginBox input[name="name"]').addClass('green');
         setTimeout(function() {
@@ -55,8 +56,8 @@ define(function(require) {
             'margin-right': '220px'
           }, 600);
         }, 400);
-      });
-      this.socket.on('loginUnsuccessful', function() {
+      }, function() {
+        // Unsuccessful
         self.$('div.loginBox').removeClass('glowBlue').addClass('glowRed');
         self.$('div.loginBox input[name="name"]').addClass('red');
         if (!(self.$('div.loginBox').wiggle('isWiggling')))
