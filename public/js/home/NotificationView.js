@@ -22,6 +22,7 @@ define(function(require) {
       }, 500);
     },
     clickAccept: function() {
+      Backbone.history.navigate('/home/join/multiplayer');
       eventBus.trigger('acceptInvite', this.nickname);
       this.slideDown();
     },
@@ -30,9 +31,12 @@ define(function(require) {
       this.slideDown();
     },
     slideDown: function() {
+      var self = this;
       this.$el.add(this.$('div')).animate({
         'bottom': -175
-      }, 500);
+      }, 500, function() {
+        self.destroy();
+      });
     }
   });
 

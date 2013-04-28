@@ -61,7 +61,6 @@ define(function(require) {
         });
       });
       this.socket.on('invitePlayer', function(fromNickname) {
-        console.log(fromNickname);
         self.$el.append('<div class="notificationView"></div>');
         var notificationView = new NotificationView({ el: self.$('.notificationView'),
                                                       socket: self.socket, nickname: fromNickname });
@@ -122,13 +121,13 @@ define(function(require) {
       eventBus.on('createMultiplayer', function() {
         self.homeView.$el.slideLeft(500, function() {
           self.homeView.destroy();
-          self.showMultiplayerSetup();
+          self.showMultiplayerSetup({ isHost: true, hostNickname: self.nickname });
         });
       });
       eventBus.on('invitePlayer', function(player) {
         var nickname = $(player).text();
         if (self.multiplayerSetupView && nickname !== self.nickname) {
-          $(player).removeClass('textGlow textGlowGreen textGlowRed').addClass('textGlowOrange');
+          //$(player).removeClass('textGlow textGlowGreen textGlowRed').addClass('textGlowOrange');
           self.socket.emit('invitePlayer', nickname);
         } else if (nickname === self.nickname) {
           alert('You cannot invite yourself to a game!');
@@ -138,6 +137,10 @@ define(function(require) {
       });
       eventBus.on('acceptInvite', function(nickname) {
         self.socket.emit('acceptInvite', nickname);
+        self.homeView.$el.slideLeft(500, function() {
+          self.homeView.destroy();
+          self.showMultiplayerSetup({ isHost: false, hostNickname: nickname });
+        });
       });
       eventBus.on('declineInvite', function(nickname) {
         self.socket.emit('declineInvite', nickname);
@@ -168,7 +171,7 @@ define(function(require) {
       var sidebarView = new SidebarView({ el: this.$('.sidebarView'), socket: this.socket,
                                           nickname: nickname });
       var chatView = new ChatView({ el: this.$('.chatView'), socket: this.socket,
-                                   nickname: nickname });
+                                    nickname: nickname });
       this.sidebarView = sidebarView;
       this.chatView = chatView;
     },
@@ -184,10 +187,14 @@ define(function(require) {
       var gameView = new GameView({ el: this.$('.gameView'), headToHead: true });
       this.gameView = gameView;
     },
-    showMultiplayerSetup: function() {
-      this.$el.append('<div class="multiplayerSetupView"></div>');
-      var multiplayerSetupView = new MultiplayerSetupView({ el: this.$('.multiplayerSetupView') });
-      this.multiplayerSetupView = multiplayerSetupView;
+    showMultiplayerSetup: function(options) {
+      if (!this.multiplayerSetupView) {
+        this.$el.append('<div class="multiplayerSetupView"></div>');
+        var multiplayerSetupView = new MultiplayerSetupView({ el: this.$('.multiplayerSetupView'),
+                                                              socket: this.socket, isHost: options.isHost,
+                                                              hostNickname: options.hostNickname });
+        this.multiplayerSetupView = multiplayerSetupView;
+      }
     }
   });
 

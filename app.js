@@ -60,9 +60,40 @@ function logDataUsage() {
 }
 
 var players = {};
+// pendingGames will be accessed using the player's nickname who created the game
+var pendingGames = {};
+// A list of all acceptable colours for players
+var playerColorList = ['#BB2200', '#0022BB', '#9900FF', '#FF00FF', '#FF6600', '#009933',
+                        '#00FFCC', '#663300', '#FFFF47', '#00FF00', '#FFFFFF', '#999999',
+                        '#003366', '#CCA300', '#7ACC52', '#A37547'];
 
 var socketIdToSocket = {};
 var socketIdToPlayerName = {};
+
+/* Finds the first index of an object in array which contains a key-value pair */
+function indexOfKeyValuePairInArray(array, key, value) {
+  var index = -1;
+  for (var i = 0; i < array.length; i++) {
+    if (array[i][key] === value) {
+      index = i;
+      break;
+    }
+  }
+  return index;
+}
+
+function addToPending(pendingGame, nickname) {
+  var player = { nickname: nickname, color: '' };
+  var index = indexOfKeyValuePairInArray(pendingGame.accepted, 'nickname', nickname);
+  if (index != -1)
+    pendingGame.accepted.splice(index, 1);
+  index = indexOfKeyValuePairInArray(pendingGame.declined, 'nickname', nickname);
+  if (index != -1)
+    pendingGame.declined.splice(index, 1);
+  if (indexOfKeyValuePairInArray(pendingGame.pending, 'nickname', nickname) == -1)
+    pendingGame.pending.push(player);
+  return pendingGame;
+}
 
 io.sockets.on('connection', function(socket) {
   console.log('User connected');
@@ -85,8 +116,22 @@ io.sockets.on('connection', function(socket) {
     var name = socketIdToPlayerName[socket.id];
     io.sockets.emit('receiveMessage', name+': '+message);
   });
+  socket.on('createMultiplayer', function() {
+    var fromNickname = socketIdToPlayerName[socket.id];
+    if (!(fromNickname in pendingGames))
+      pendingGames[fromNickname] = { host: { nickname: fromNickname, color: '' },
+                                     accepted: [], pending: [], declined: [] };
+    socket.emit('playersInGameUpdate', pendingGames[fromNickname]);
+  });
+  socket.on('getPlayersInGameUpdate', function(fromNickname) {
+    socket.emit('playersInGameUpdate', pendingGames[fromNickname]);
+  });
   socket.on('invitePlayer', function(nickname) {
     var fromNickname = socketIdToPlayerName[socket.id];
+    if (!(fromNickname in pendingGames))
+      return;
+    pendingGames[fromNickname] = addToPending(pendingGames[fromNickname], nickname);
+    socket.emit('playersInGameUpdate', pendingGames[fromNickname]);
     for (var i in socketIdToPlayerName) {
       if (socketIdToPlayerName[i] === nickname) {
         socketIdToSocket[i].emit('invitePlayer', fromNickname);
@@ -96,24 +141,45 @@ io.sockets.on('connection', function(socket) {
   });
   socket.on('acceptInvite', function(fromNickname) {
     var nickname = socketIdToPlayerName[socket.id];
-    console.log(nickname+' accepted '+fromNickname+"'s invite");
+    var player = { nickname: nickname, color: '' };
+    // This stops players trying to accept an invite to a game that does not exist
+    if (!(fromNickname in pendingGames))
+      return;
+    var index = indexOfKeyValuePairInArray(pendingGames[fromNickname].pending, 'nickname', nickname);
+    if (index != -1) {
+      // Move player from pending to accepted
+      pendingGames[fromNickname].pending.splice(index, 1);
+      pendingGames[fromNickname].accepted.push(player);
+    }
     for (var i in socketIdToPlayerName) {
       if (socketIdToPlayerName[i] === fromNickname) {
         socketIdToSocket[i].emit('inviteAccepted', nickname);
+        socketIdToSocket[i].emit('playersInGameUpdate', pendingGames[fromNickname]);
       }
     }
   });
   socket.on('declineInvite', function(fromNickname) {
     var nickname = socketIdToPlayerName[socket.id];
-    console.log(nickname+' declined '+fromNickname+"'s invite");
+    var player = { nickname: nickname, color: '' };
+    // This stops players trying to decline an invite to a game that does not exist
+    if (!(fromNickname in pendingGames))
+      return;
+    var index = indexOfKeyValuePairInArray(pendingGames[fromNickname].pending, 'nickname', nickname);
+    if (index != -1) {
+      // Move player from pending to declined
+      pendingGames[fromNickname].pending.splice(index, 1);
+      pendingGames[fromNickname].declined.push(player);
+    }
     for (var i in socketIdToPlayerName) {
       if (socketIdToPlayerName[i] === fromNickname) {
         socketIdToSocket[i].emit('inviteDeclined', nickname);
+        socketIdToSocket[i].emit('playersInGameUpdate', pendingGames[fromNickname]);
       }
     }
   });
   socket.on('disconnect', function() {
     console.log('User disconnected');
+    delete pendingGames[socketIdToPlayerName[socket.id]];
     delete socketIdToSocket[socket.id];
     for (var i in players) {
       if (i == socketIdToPlayerName[socket.id]) {

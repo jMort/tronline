@@ -1,8 +1,8 @@
 <h2>Online Multiplayer</h2>
 <div style="width: 500px; margin: 0 auto;">
-	<table style="margin: 0 auto;">
+	<table id="setupMenu">
 		<tbody>
-			<tr>
+			<!--<tr>
 				<td><label>Number of Players: </label></td>
 				<td>
 					<select>
@@ -23,7 +23,7 @@
 						<option>16</option>
 					</select> (max. 16)
 				</td>
-			</tr>
+			</tr>-->
 			<tr>
 				<td><label>Difficulty: </label></td>
 				<td>
@@ -40,13 +40,44 @@
 					</a>
 				</td>
 			</tr>
+			<tr>
+				<td><div id="numPlayersInGame">1/16</div>
+					<div id="playersInGameList"></div>
+				</td>
+				<td>
+					<p>Select your colour:</p>
+					<table id="colorSelection">
+						<tbody>
+							<tr>
+								<td><span class="red"></span></td>
+								<td><span class="blue"></span></td>
+								<td><span class="purple"></span></td>
+								<td><span class="pink"></span></td>
+								<td><span class="orange"></span></td>
+								<td><span class="green"></span></td>
+								<td><span class="cyan"></span></td>
+								<td><span class="brown"></span></td>
+							</tr>
+							<tr>
+								<td><span class="yellow"></span></td>
+								<td><span class="lime"></span></td>
+								<td><span class="white"></span></td>
+								<td><span class="grey"></span></td>
+								<td><span class="navy"></span></td>
+								<td><span class="gold"></span></td>
+								<td><span class="lightgreen"></span></td>
+								<td><span class="lightbrown"></span></td>
+							</tr>
+						</tbod>
+					</table>
+				</td>
+			</tr>
 		</tbody>
 	</table>
 	<p>
 	Invite other players who are online from the list on the right hand side of the screen.
-	Once you're done, click 'Create Game' to start the game!
 	</p>
 	<p>
-	<button name="createGame" type="button">Create Game</button>
+	<button name="createGame" type="button">Start</button>
 	</p>
 </div>

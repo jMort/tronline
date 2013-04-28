@@ -174,7 +174,7 @@ div.homeView {
 span.welcomeMessage {
     position: fixed;
     top: 0;
-    right: 220px;
+    right: 16%; /* right: 220px; */
     padding: 10px;
     font-size: 13pt;
 }
@@ -241,7 +241,7 @@ img.imgButton:hover {
 
 /* SidebarView */
 div.sidebarView {
-    width: 220px;
+    width: 16%; /* width: 220px; */
     height: 100%;
     position: fixed;
     top: 0;
@@ -259,11 +259,11 @@ div.sidebarView tbody#playersOnline tr td:nth-child(1) {
 
 /* ChatView */
 div.chatView {
-    height: 250px;
+    height: 30%; /* height: 250px; */
     position: fixed;
     bottom: 0;
     left: 0;
-    right: 220px;
+    right: 16%; /* right: 220px; */
     padding-top: 10px;
     padding-left: 10px;
     border: 1px solid #444;
@@ -274,10 +274,10 @@ div.chatView {
     background-color: rgba(255, 255, 255, 0.2);
 }
 div.chatView input[name="message"] {
-    position: fixed;
+    position: absolute;
     bottom: 5px;
     left: 5px;
-    right: 300px;
+    right: 75px;
     height: 25px;
     padding-left: 5px;
     font-family: "Courier New";
@@ -309,9 +309,9 @@ div.chatView input[name="message"]:focus {
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
 }
 div.chatView button {
-    position: fixed;
+    position: absolute;
     bottom: 3px;
-    right: 225px;
+    right: 5px;
     background-color: #CCC;
     padding: 5px 12px;
     font-family: "Courier New";
@@ -350,8 +350,83 @@ h2 {
     text-align: center;
     color: #DDD;
 }
-div.multiplayerSetupView table tbody tr td:nth-child(1) {
+div.multiplayerSetupView table#setupMenu {
+    margin: 0 auto;
+}
+div.multiplayerSetupView table#setupMenu tr:first-child {
     text-align: right;
+}
+div.multiplayerSetupView table#setupMenu tr td {
+    text-align: center;
+}
+div.multiplayerSetupView div#numPlayersInGame {
+    margin-bottom: 2px;
+}
+div.multiplayerSetupView table#colorSelection {
+    margin: 0 auto;
+}
+div.multiplayerSetupView table#colorSelection span {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-bottom: -4px;
+    cursor: pointer;
+}
+div.multiplayerSetupView table#colorSelection span.red {
+    background-color: #BB2200;
+}
+div.multiplayerSetupView table#colorSelection span.blue {
+    background-color: #0022BB;
+}
+div.multiplayerSetupView table#colorSelection span.purple {
+    background-color: #9900FF;
+}
+div.multiplayerSetupView table#colorSelection span.pink {
+    background-color: #FF00FF;
+}
+div.multiplayerSetupView table#colorSelection span.orange {
+    background-color: #FF6600;
+}
+div.multiplayerSetupView table#colorSelection span.green {
+    background-color: #009933;
+}
+div.multiplayerSetupView table#colorSelection span.cyan {
+    background-color: #00FFCC;
+}
+div.multiplayerSetupView table#colorSelection span.brown {
+    background-color: #663300;
+}
+div.multiplayerSetupView table#colorSelection span.yellow {
+    background-color: #FFFF47;
+}
+div.multiplayerSetupView table#colorSelection span.lime {
+    background-color: #00FF00;
+}
+div.multiplayerSetupView table#colorSelection span.white {
+    background-color: #FFFFFF;
+}
+div.multiplayerSetupView table#colorSelection span.grey {
+    background-color: #999999;
+}
+div.multiplayerSetupView table#colorSelection span.navy {
+    background-color: #003366;
+}
+div.multiplayerSetupView table#colorSelection span.gold {
+    background-color: #CCA300;
+}
+div.multiplayerSetupView table#colorSelection span.lightgreen {
+    background-color: #7ACC52;
+}
+div.multiplayerSetupView table#colorSelection span.lightbrown {
+    background-color: #A37547;
+}
+div.multiplayerSetupView div#playersInGameList {
+    text-align: left;
+    width: 150px;
+    height: 100px;
+    border: 1px solid #DDD;
+    padding: 5px;
+    overflow-y: auto;
 }
 div.multiplayerSetupView a {
     color: rgb(0, 0, 238);
