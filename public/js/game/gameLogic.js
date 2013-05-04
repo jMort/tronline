@@ -1,6 +1,4 @@
 define(function(require) {
-  var Player = require('game/Player');
-
   var Game = function(width, height, players) {
     this.players = players;
 
