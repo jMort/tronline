@@ -8,6 +8,10 @@ var port = parseInt(process.env.PORT) || 80;
 console.log('Listening on port '+port);
 app.listen(port);
 
+/* Game Classes */
+var Game = require('./public/js/game/gameLogic');
+var Player = require('./public/js/game/Player');
+
 // Client request handler
 function handler(req, res) {
   if (req.headers.host === 'tronline.me') {
@@ -104,7 +108,7 @@ io.sockets.on('connection', function(socket) {
       socket.emit('loginUnsuccessful');
     } else {
       socket.emit('loginSuccessful');
-      players[nickname] = true;
+      players[nickname] = new Player(nickname, 0, 0, 5, 'E', '');
       socketIdToPlayerName[socket.id] = nickname;
       io.sockets.emit('playerListUpdate', Object.keys(players).sort());
     }

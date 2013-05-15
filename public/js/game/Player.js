@@ -1,3 +1,8 @@
+({ define: typeof define === 'function'
+            ? define
+            : function (f) {
+              module.exports = exports = f();
+            }}).
 define(function(require) {
   var Player = function(nickname, x, y, speed, direction, color, logic) {
     this.nickname = nickname;
