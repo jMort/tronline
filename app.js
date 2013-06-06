@@ -99,100 +99,33 @@ function addToPending(pendingGame, nickname) {
   return pendingGame;
 }
 
+var events = require('./events.js')(io,
+                                    Game, Player,
+                                    players, socketIdToSocket, socketIdToPlayerName, pendingGames,
+                                    indexOfKeyValuePairInArray, addToPending);
+
 io.sockets.on('connection', function(socket) {
   console.log('User connected');
   socketIdToSocket[socket.id] = socket;
   io.sockets.emit('numPlayersOnline', Object.keys(socketIdToSocket).length);
-  socket.on('checkLogin', function(nickname) {
-    if (players[nickname]) {
-      socket.emit('loginUnsuccessful');
-    } else {
-      socket.emit('loginSuccessful');
-      players[nickname] = new Player(nickname, 0, 0, 5, 'E', '');
-      socketIdToPlayerName[socket.id] = nickname;
-      io.sockets.emit('playerListUpdate', Object.keys(players).sort());
-    }
-  });
-  socket.on('getPlayerList', function() {
-    socket.emit('playerListUpdate', Object.keys(players).sort());
-  });
-  socket.on('sendMessage', function(message) {
-    var name = socketIdToPlayerName[socket.id];
-    io.sockets.emit('receiveMessage', name+': '+message);
-  });
-  socket.on('createMultiplayer', function() {
-    var fromNickname = socketIdToPlayerName[socket.id];
-    if (!(fromNickname in pendingGames))
-      pendingGames[fromNickname] = { host: { nickname: fromNickname, color: '' },
-                                     accepted: [], pending: [], declined: [] };
-    socket.emit('playersInGameUpdate', pendingGames[fromNickname]);
-  });
-  socket.on('getPlayersInGameUpdate', function(fromNickname) {
-    socket.emit('playersInGameUpdate', pendingGames[fromNickname]);
-  });
-  socket.on('invitePlayer', function(nickname) {
-    var fromNickname = socketIdToPlayerName[socket.id];
-    if (!(fromNickname in pendingGames))
-      return;
-    pendingGames[fromNickname] = addToPending(pendingGames[fromNickname], nickname);
-    socket.emit('playersInGameUpdate', pendingGames[fromNickname]);
-    for (var i in socketIdToPlayerName) {
-      if (socketIdToPlayerName[i] === nickname) {
-        socketIdToSocket[i].emit('invitePlayer', fromNickname);
-        break;
-      }
-    }
-  });
-  socket.on('acceptInvite', function(fromNickname) {
-    var nickname = socketIdToPlayerName[socket.id];
-    var player = { nickname: nickname, color: '' };
-    // This stops players trying to accept an invite to a game that does not exist
-    if (!(fromNickname in pendingGames))
-      return;
-    var index = indexOfKeyValuePairInArray(pendingGames[fromNickname].pending, 'nickname', nickname);
-    if (index != -1) {
-      // Move player from pending to accepted
-      pendingGames[fromNickname].pending.splice(index, 1);
-      pendingGames[fromNickname].accepted.push(player);
-    }
-    for (var i in socketIdToPlayerName) {
-      if (socketIdToPlayerName[i] === fromNickname) {
-        socketIdToSocket[i].emit('inviteAccepted', nickname);
-        socketIdToSocket[i].emit('playersInGameUpdate', pendingGames[fromNickname]);
-      }
-    }
-  });
-  socket.on('declineInvite', function(fromNickname) {
-    var nickname = socketIdToPlayerName[socket.id];
-    var player = { nickname: nickname, color: '' };
-    // This stops players trying to decline an invite to a game that does not exist
-    if (!(fromNickname in pendingGames))
-      return;
-    var index = indexOfKeyValuePairInArray(pendingGames[fromNickname].pending, 'nickname', nickname);
-    if (index != -1) {
-      // Move player from pending to declined
-      pendingGames[fromNickname].pending.splice(index, 1);
-      pendingGames[fromNickname].declined.push(player);
-    }
-    for (var i in socketIdToPlayerName) {
-      if (socketIdToPlayerName[i] === fromNickname) {
-        socketIdToSocket[i].emit('inviteDeclined', nickname);
-        socketIdToSocket[i].emit('playersInGameUpdate', pendingGames[fromNickname]);
-      }
-    }
-  });
-  socket.on('disconnect', function() {
-    console.log('User disconnected');
-    delete pendingGames[socketIdToPlayerName[socket.id]];
-    delete socketIdToSocket[socket.id];
-    for (var i in players) {
-      if (i == socketIdToPlayerName[socket.id]) {
-        delete players[i];
-        delete socketIdToPlayerName[socket.id];
-        io.sockets.emit('playerListUpdate', Object.keys(players));
-        break;
-      }
-    }
-    io.sockets.emit('numPlayersOnline', Object.keys(socketIdToSocket).length);
-  });
+
+  // This is to emulate a for loop.
+  // This is done due to asynchronous issues which resulted in the for loop always taking
+  // the value of the last item looped through.
+  var i = 0;
+  var each = function() {
+    var e = Object.keys(events)[i];
+    // Add event listener for event `e` which calls the event function from events.js
+    socket.on(e, function() {
+      // Convert arguments object to an array
+      arguments = Array.prototype.slice.call(arguments);
+      // Call the event callback with socket as the first parameter
+      var args = [socket].concat(arguments);
+      events[e].apply(this, args);
+    });
+    i++;
+    if (i < Object.keys(events).length)
+      setTimeout(each, 1);
+  };
+  setTimeout(each, 1);
 });
