@@ -1,5 +1,23 @@
-module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdToPlayerName, pendingGames, indexOfKeyValuePairInArray, addToPending) {
+module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdToPlayerName, pendingGames, playerColorList, indexOfKeyValuePairInArray, addToPending) {
+  // Sends event to all players in array `playerGroup`
+  var sendEventToPlayerGroup = function(playerGroup, event, data) {
+    for (var i in playerGroup) {
+      for (var j in socketIdToPlayerName) {
+        if (socketIdToPlayerName[j] == playerGroup[i].nickname) {
+          socketIdToSocket[j].emit(event, data);
+        }
+      }
+    }
+  };
+
   return {
+    pingIn: function(socket) {
+      if (players[socketIdToPlayerName[socket.id]]._pings.length == 5)
+        players[socketIdToPlayerName[socket.id]]._pings.splice(0, 1);
+      var lastPingSentAt = players[socketIdToPlayerName[socket.id]]._lastPingSentAt;
+      if (lastPingSentAt !== null)
+        players[socketIdToPlayerName[socket.id]]._pings.push(new Date().getTime() - lastPingSentAt);
+    },
     checkLogin: function(socket, nickname) {
       if (players[nickname]) {
         socket.emit('loginUnsuccessful');
@@ -20,12 +38,15 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
     createMultiplayer: function(socket) {
       var fromNickname = socketIdToPlayerName[socket.id];
       if (!(fromNickname in pendingGames))
-        pendingGames[fromNickname] = { host: { nickname: fromNickname, color: '' },
+        pendingGames[fromNickname] = { host: players[fromNickname], difficulty: 'Easy',
                                        accepted: [], pending: [], declined: [] };
       socket.emit('playersInGameUpdate', pendingGames[fromNickname]);
     },
     getPlayersInGameUpdate: function(socket, fromNickname) {
-      socket.emit('playersInGameUpdate', pendingGames[fromNickname]);
+      if (fromNickname in pendingGames)
+        socket.emit('playersInGameUpdate', pendingGames[fromNickname]);
+      else
+        socket.emit('gameCancelled');
     },
     invitePlayer: function(socket, nickname) {
       var fromNickname = socketIdToPlayerName[socket.id];
@@ -42,7 +63,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
     },
     acceptInvite: function(socket, fromNickname) {
       var nickname = socketIdToPlayerName[socket.id];
-      var player = { nickname: nickname, color: '' };
+      var player = players[nickname];
       // This stops players trying to accept an invite to a game that does not exist
       if (!(fromNickname in pendingGames))
         return;
@@ -52,16 +73,13 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         pendingGames[fromNickname].pending.splice(index, 1);
         pendingGames[fromNickname].accepted.push(player);
       }
-      for (var i in socketIdToPlayerName) {
-        if (socketIdToPlayerName[i] === fromNickname) {
-          socketIdToSocket[i].emit('inviteAccepted', nickname);
-          socketIdToSocket[i].emit('playersInGameUpdate', pendingGames[fromNickname]);
-        }
-      }
+      // Send playersInGameUpdate to all players in game
+      var group = [pendingGames[fromNickname].host].concat(pendingGames[fromNickname].accepted);
+      sendEventToPlayerGroup(group, 'playersInGameUpdate', pendingGames[fromNickname]);
     },
     declineInvite: function(socket, fromNickname) {
       var nickname = socketIdToPlayerName[socket.id];
-      var player = { nickname: nickname, color: '' };
+      var player = players[nickname];
       // This stops players trying to decline an invite to a game that does not exist
       if (!(fromNickname in pendingGames))
         return;
@@ -71,16 +89,72 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         pendingGames[fromNickname].pending.splice(index, 1);
         pendingGames[fromNickname].declined.push(player);
       }
-      for (var i in socketIdToPlayerName) {
-        if (socketIdToPlayerName[i] === fromNickname) {
-          socketIdToSocket[i].emit('inviteDeclined', nickname);
-          socketIdToSocket[i].emit('playersInGameUpdate', pendingGames[fromNickname]);
+      // Send playersInGameUpdate to all players in game
+      var group = [pendingGames[fromNickname].host].concat(pendingGames[fromNickname].accepted);
+      sendEventToPlayerGroup(group, 'playersInGameUpdate', pendingGames[fromNickname]);
+    },
+    changeDifficulty: function(socket, difficulty) {
+      var nickname = socketIdToPlayerName[socket.id];
+      if (nickname in pendingGames) {
+        var validDifficulties = ['Easy', 'Medium', 'Hard'];
+        if (validDifficulties.indexOf(difficulty) >= 0) {
+          pendingGames[nickname].difficulty = difficulty;
+          var group = [pendingGames[nickname].host].concat(pendingGames[nickname].accepted);
+          sendEventToPlayerGroup(group, 'playersInGameUpdate', pendingGames[nickname]);
         }
       }
     },
+    changeColor: function(socket, hostNickname, color) {
+      var nickname = socketIdToPlayerName[socket.id];
+      var player = players[nickname];
+      // If color is in playerColorList
+      if (playerColorList.indexOf(color) !== -1) {
+        var index = indexOfKeyValuePairInArray(pendingGames[hostNickname].accepted, 'nickname', nickname);
+        // If nickname is in game or nickname is host
+        if (index != -1 || nickname === hostNickname) {
+          var colorValid = true;
+          for (var i in pendingGames[hostNickname].accepted) {
+            if (pendingGames[hostNickname].accepted[i].getColor() === color)
+              colorValid = false;
+          }
+          if (pendingGames[hostNickname].host.getColor() === color)
+            colorValid = false;
+          if (colorValid) {
+            player.setColor(color);
+            var group = [pendingGames[hostNickname].host].concat(pendingGames[hostNickname].accepted);
+            sendEventToPlayerGroup(group, 'playersInGameUpdate', pendingGames[hostNickname]);
+          }
+        }
+      }
+      var index = indexOfKeyValuePairInArray(pendingGames[hostNickname].accepted, 'nickname', nickname);
+    },
     disconnect: function(socket) {
       console.log('User disconnected');
-      delete pendingGames[socketIdToPlayerName[socket.id]];
+      if (socketIdToPlayerName[socket.id] in pendingGames) {
+        // If player is the host of a game, notify all players in the game that the game has been removed
+        var game = pendingGames[socketIdToPlayerName[socket.id]];
+        var group = game.accepted.concat(game.pending);
+        sendEventToPlayerGroup(group, 'gameCancelled', game.host.nickname);
+        delete pendingGames[socketIdToPlayerName[socket.id]];
+      } else {
+        var nickname = socketIdToPlayerName[socket.id];
+        for (var game in pendingGames) {
+          var acceptedIndex = indexOfKeyValuePairInArray(pendingGames[game].accepted, 'nickname', nickname);
+          var pendingIndex = indexOfKeyValuePairInArray(pendingGames[game].pending, 'nickname', nickname);
+          var declinedIndex = indexOfKeyValuePairInArray(pendingGames[game].declined, 'nickname', nickname);
+          if (acceptedIndex >= 0 || pendingIndex >= 0 || declinedIndex >= 0) {
+            if (acceptedIndex >= 0)
+              pendingGames[game].accepted.splice(acceptedIndex, 1);
+            if (pendingIndex >= 0)
+              pendingGames[game].pending.splice(pendingIndex, 1);
+            if (declinedIndex >= 0)
+              pendingGames[game].declined.splice(declinedIndex, 1);
+            var group = [pendingGames[game].host].concat(pendingGames[game].accepted);
+            sendEventToPlayerGroup(group, 'playersInGameUpdate', pendingGames[game]);
+          }
+        }
+      }
+
       delete socketIdToSocket[socket.id];
       for (var i in players) {
         if (i == socketIdToPlayerName[socket.id]) {

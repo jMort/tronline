@@ -26,12 +26,16 @@
 			</tr>-->
 			<tr>
 				<td><label>Difficulty: </label></td>
-				<td>
+				<td id="difficulty">
+					<% if (isHost) { %>
 					<select>
 						<option>Easy</option>
 						<option>Medium</option>
 						<option>Hard</option>
 					</select>
+					<% } else { %>
+						<span><%= difficulty %></span>
+					<% } %>
 					<a href="/what-is-difficulty.html"
 						onclick="var left = (screen.width/2)-(500/2)-50;
   								var top = (screen.height/2)-(220/2)-90;

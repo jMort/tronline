@@ -65,6 +65,9 @@ define(function(require) {
         var notificationView = new NotificationView({ el: self.$('.notificationView'),
                                                       socket: self.socket, nickname: fromNickname });
       });
+      this.socket.on('pingOut', function() {
+        self.socket.emit('pingIn');
+      });
       this.render();
       this.nickname = null;
       eventBus.on('showLogin', function() {

@@ -19,6 +19,8 @@ define(function(require) {
     this.nextDirection = null;
     this.color = color;
     this.active = true;
+    this._pings = [];
+    this._lastPingSentAt = null;
 
     var self = this;
 
@@ -115,6 +117,10 @@ define(function(require) {
       return true;
     };
 
+    this.setColor = function(color) {
+      self.color = color;
+    };
+
     this.getHead = function() {
       return self.path[self.path.length-1];
     };
@@ -150,6 +156,16 @@ define(function(require) {
     this.getColor = function() {
       return self.color;
     };
+  };
+
+  // This is used to create a new Player object with the same data as on the server.
+  // It is needed as socket.io doesn't send functions contained within an object, only data.
+  Player.createNewFromObject = function(obj) {
+    var player = new Player(obj.nickname, obj.path[0][0], obj.path[0][1], obj.speed, obj.direction, obj.color);
+    player.path = obj.path;
+    player._pings = obj._pings;
+    player._lastPingSentAt = obj._lastPingSentAt;
+    return player;
   };
 
   return Player;

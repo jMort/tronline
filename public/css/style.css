@@ -339,6 +339,7 @@ div.chatView button:hover {
 div.chatView #messages {
     height: 210px;
     overflow-y: auto;
+    color: #FFF;
 }
 
 /* MultiplayerSetupView */

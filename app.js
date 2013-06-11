@@ -87,13 +87,16 @@ function indexOfKeyValuePairInArray(array, key, value) {
 }
 
 function addToPending(pendingGame, nickname) {
-  var player = { nickname: nickname, color: '' };
+  var player = players[nickname];
+  // Remove player from accepted list if they are in it
   var index = indexOfKeyValuePairInArray(pendingGame.accepted, 'nickname', nickname);
   if (index != -1)
     pendingGame.accepted.splice(index, 1);
+  // Remove player from declined list if they are in it
   index = indexOfKeyValuePairInArray(pendingGame.declined, 'nickname', nickname);
   if (index != -1)
     pendingGame.declined.splice(index, 1);
+  // If player is no in pending list then add them to it
   if (indexOfKeyValuePairInArray(pendingGame.pending, 'nickname', nickname) == -1)
     pendingGame.pending.push(player);
   return pendingGame;
@@ -102,6 +105,7 @@ function addToPending(pendingGame, nickname) {
 var events = require('./events.js')(io,
                                     Game, Player,
                                     players, socketIdToSocket, socketIdToPlayerName, pendingGames,
+                                    playerColorList,
                                     indexOfKeyValuePairInArray, addToPending);
 
 io.sockets.on('connection', function(socket) {
@@ -129,3 +133,12 @@ io.sockets.on('connection', function(socket) {
   };
   setTimeout(each, 1);
 });
+
+var intervalId = setInterval(function() {
+  for (var i in socketIdToSocket) {
+    if (i in socketIdToPlayerName) {
+      players[socketIdToPlayerName[i]]._lastPingSentAt = new Date().getTime();
+      socketIdToSocket[i].emit('pingOut');
+    }
+  }
+}, 1000);
