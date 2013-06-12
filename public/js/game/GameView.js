@@ -17,18 +17,24 @@ define(function(require) {
       KEY_A = 65,
       KEY_S = 83,
       KEY_D = 68;
-  var WIDTH  = $(window).width();
-      HEIGHT = $(window).height();
-  console.log(WIDTH, HEIGHT);
+  var WIDTH, HEIGHT;
   var GameView = Backbone.View.extend({
     initialize: function(options) {
+      WIDTH = $(window).width();
+      HEIGHT = $(window).height();
       this.renderedWidth = WIDTH-20-(WIDTH%10);
       this.renderedHeight = HEIGHT-20-(HEIGHT%10);
-      if (options.headToHead)
+      if (options.headToHead) {
         this.headToHeadInit();
-      else
+        this.render();
+      } else if (options.multiplayer) {
+        this.socket = options.socket;
+        this.hostNickname = options.hostNickname;
+        this.multiplayerInit();
+      } else {
         this.singlePlayerInit();
-      this.render();
+        this.render();
+      }
     },
     singlePlayerInit: function() {
       var player = new Player('', 45, parseInt(this.renderedHeight/2), 5, 'E', '#BB2200');
@@ -69,6 +75,22 @@ define(function(require) {
           player1.updateDirection('S');
         else if (e.keyCode == KEY_D)
           player1.updateDirection('E');
+      });
+    },
+    multiplayerInit: function() {
+      var left = WIDTH/2 - 55;
+      var top = HEIGHT/2 - 50;
+      this.$el.append('<h1 id="countdown" style="position: absolute; left: '+left+'px; top: '+top+'px;">Ready!</h1>');
+      var countdown = 3;
+      var self = this;
+      this.socket.on('startCountdown', function() {
+        var intervalId = setInterval(function() {
+          self.$('#countdown').text(countdown);
+          if (countdown > 0)
+            countdown--;
+          else
+            clearInterval(intervalId);
+        }, 1000);
       });
     },
     translatePoints: function(points) {

@@ -78,10 +78,16 @@
 			</tr>
 		</tbody>
 	</table>
+	<% if (isHost) { %>
+		<p>
+		Invite other players who are online from the list on the right hand side of the screen.
+		</p>
+	<% } %>
 	<p>
-	Invite other players who are online from the list on the right hand side of the screen.
-	</p>
-	<p>
-	<button name="createGame" type="button">Start</button>
+	<% if (isHost) { %>
+		<button name="createGame" type="button">Start</button>
+	<% } else { %>
+		<span style="float: right;">Waiting for host to start...</span>
+	<% } %>
 	</p>
 </div>

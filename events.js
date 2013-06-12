@@ -71,6 +71,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
       if (index != -1) {
         // Move player from pending to accepted
         pendingGames[fromNickname].pending.splice(index, 1);
+        player.setColor('');
         pendingGames[fromNickname].accepted.push(player);
       }
       // Send playersInGameUpdate to all players in game
@@ -127,6 +128,49 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         }
       }
       var index = indexOfKeyValuePairInArray(pendingGames[hostNickname].accepted, 'nickname', nickname);
+    },
+    startGame: function(socket) {
+      var nickname = socketIdToPlayerName[socket.id];
+      if (nickname in pendingGames) {
+        var group = [pendingGames[nickname].host].concat(pendingGames[nickname].accepted);
+        sendEventToPlayerGroup(group, 'gameStarting');
+        setTimeout(function() {
+          var pingToPlayerNames = {};
+          for (var i in group) {
+            var sum = 0;
+            for (var j in group[i]._pings)
+              sum += group[i]._pings[j];
+            var ping = parseInt((sum/players[group[i].nickname]._pings.length)/2);
+            if (ping in pingToPlayerNames)
+              pingToPlayerNames[ping].push(group[i].nickname);
+            else
+              pingToPlayerNames[ping] = [group[i].nickname];
+          }
+          var sortedPings = Object.keys(pingToPlayerNames).sort(function(a, b) {
+            return (parseInt(b) - parseInt(a)) >= 0;
+          });
+
+          var i = 0;
+          var each = function() {
+            var ping = sortedPings[i];
+            for (j in pingToPlayerNames[ping]) {
+              var nickname = pingToPlayerNames[ping][j];
+              for (k in socketIdToPlayerName) {
+                console.log(socketIdToPlayerName[k]);
+                if (socketIdToPlayerName[k] === nickname) {
+                  socketIdToSocket[k].emit('startCountdown');
+                  break;
+                }
+              }
+            }
+            i++;
+            if (i < sortedPings.length) {
+              setTimeout(each, ping-sortedPings[i]);
+            }
+          };
+          setTimeout(each, 0);
+        }, 1000);
+      }
     },
     disconnect: function(socket) {
       console.log('User disconnected');

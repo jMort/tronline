@@ -121,6 +121,14 @@ define(function(require) {
           self.showHeadToHead();
         });
       });
+      eventBus.on('playMultiplayer', function(hostNickname) {
+        self.multiplayerSetupView.$el.slideLeft(500, function() {
+          self.multiplayerSetupView.destroy();
+          self.sidebarView.destroy();
+          self.chatView.destroy();
+          self.showMultiplayer(hostNickname);
+        });
+      });
       eventBus.on('createMultiplayer', function() {
         self.homeView.$el.slideLeft(500, function() {
           self.homeView.destroy();
@@ -188,6 +196,13 @@ define(function(require) {
       this.$el.html('');
       this.$el.append('<div class="gameView"></div>');
       var gameView = new GameView({ el: this.$('.gameView'), headToHead: true });
+      this.gameView = gameView;
+    },
+    showMultiplayer: function(hostNickname) {
+      this.$el.html('');
+      this.$el.append('<div class="gameView"></div>');
+      var gameView = new GameView({ el: this.$('.gameView'), multiplayer: true, socket: this.socket,
+                                    hostNickname: hostNickname});
       this.gameView = gameView;
     },
     showMultiplayerSetup: function(options) {

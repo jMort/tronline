@@ -10,7 +10,8 @@ define(function(require) {
   var MultiplayerSetupView = Backbone.View.extend({
     events: {
       'change td#difficulty select': 'changeDifficulty',
-      'click table#colorSelection span': 'clickColor'
+      'click table#colorSelection span': 'clickColor',
+      'click button[name="createGame"]': 'clickStart'
     },
     initialize: function(options) {
       this.socket = options.socket;
@@ -58,6 +59,10 @@ define(function(require) {
         Backbone.history.navigate('/home', { replace: true });
         eventBus.trigger('showLobby');
       });
+      this.socket.on('gameStarting', function() {
+        Backbone.history.navigate('/home/play/multiplayer');
+        eventBus.trigger('playMultiplayer', self.hostNickname);
+      });
       this.render();
     },
     render: function() {
@@ -77,6 +82,9 @@ define(function(require) {
       };
       var color = rgbToHex($(e.currentTarget).css('background-color'));
       this.socket.emit('changeColor', this.hostNickname, color);
+    },
+    clickStart: function() {
+      this.socket.emit('startGame');
     }
   });
 
