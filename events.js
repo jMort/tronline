@@ -33,6 +33,8 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
     },
     sendMessage: function(socket, message) {
       var name = socketIdToPlayerName[socket.id];
+      message = message.replace(/</g, '&lt;');
+      message = message.replace(/>/g, '&gt;');
       io.sockets.emit('receiveMessage', name+': '+message);
     },
     createMultiplayer: function(socket) {
