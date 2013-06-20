@@ -5,6 +5,8 @@
             }}).
 define(function(require) {
   var Game = function(width, height, players) {
+    this.width = this.width;
+    this.height = this.height;
     this.players = players;
 
     var isCollision = function(point, direction, paths) {
@@ -68,6 +70,17 @@ define(function(require) {
     this.getPlayers = function() {
       return self.players;
     };
+  };
+
+  // This is used to clone a Game object to avoid passing by reference
+  Game.clone = function(game) {
+    var players = game.getPlayers();
+    var clonedPlayers = [];
+    for (var i in players) {
+      clonedPlayers.push(Player.clone(players[i]));
+    }
+    var newGame = new Game(game.width, game.height, clonedPlayers);
+    return newGame;
   };
 
   return Game;

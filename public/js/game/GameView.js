@@ -80,16 +80,18 @@ define(function(require) {
     multiplayerInit: function() {
       var left = WIDTH/2 - 55;
       var top = HEIGHT/2 - 50;
-      this.$el.append('<h1 id="countdown" style="position: absolute; left: '+left+'px; top: '+top+'px;">Ready!</h1>');
+      this.$el.append('<h1 id="countdown" class="textGlow" style="position: absolute; left: '+left+'px; top: '+top+'px;">Ready!</h1>');
       var countdown = 3;
       var self = this;
       this.socket.on('startCountdown', function() {
         var intervalId = setInterval(function() {
           self.$('#countdown').text(countdown);
-          if (countdown > 0)
+          if (countdown > 0) {
             countdown--;
-          else
+          } else {
             clearInterval(intervalId);
+            self.$('#countdown').remove();
+          }
         }, 1000);
       });
     },

@@ -168,5 +168,10 @@ define(function(require) {
     return player;
   };
 
+  // This is used to clone a Player object to avoid passing by reference
+  Player.clone = function(player) {
+    return Player.createNewFromObject(player);
+  };
+
   return Player;
 });
