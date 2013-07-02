@@ -161,7 +161,8 @@ define(function(require) {
   // This is used to create a new Player object with the same data as on the server.
   // It is needed as socket.io doesn't send functions contained within an object, only data.
   Player.createNewFromObject = function(obj) {
-    var player = new Player(obj.nickname, obj.path[0][0], obj.path[0][1], obj.speed, obj.direction, obj.color);
+    var player = new Player(obj.nickname, obj.path[0][0], obj.path[0][1], obj.speed, obj.direction,
+                            obj.color);
     player.path = obj.path;
     player._pings = obj._pings;
     player._lastPingSentAt = obj._lastPingSentAt;
