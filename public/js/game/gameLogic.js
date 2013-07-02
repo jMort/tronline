@@ -1,12 +1,17 @@
 ({ define: typeof define === 'function'
             ? define
             : function (f) {
-              module.exports = exports = f();
+              module.exports = exports = f(function(file) {
+                // This imitates the 'require' function for node js
+                //return require('./public/js/'+file+'.js');
+                return require('../'+file);
+              });
             }}).
 define(function(require) {
+  var Player = require('game/Player');
   var Game = function(width, height, players) {
-    this.width = this.width;
-    this.height = this.height;
+    this.width = width;
+    this.height = height;
     this.players = players;
 
     var isCollision = function(point, direction, paths) {
@@ -72,15 +77,20 @@ define(function(require) {
     };
   };
 
+  // This is used to create a new Game object with the same data as on the server.
+  // It is needed as socket.io doesn't send functions contained within an object, only data.
+  Game.createNewFromObject = function(obj) {
+    var players = [];
+    for (var i in obj.players) {
+      players.push(Player.createNewFromObject(obj.players[i]));
+    }
+    var game = new Game(obj.width, obj.height, players);
+    return game;
+  };
+
   // This is used to clone a Game object to avoid passing by reference
   Game.clone = function(game) {
-    var players = game.getPlayers();
-    var clonedPlayers = [];
-    for (var i in players) {
-      clonedPlayers.push(Player.clone(players[i]));
-    }
-    var newGame = new Game(game.width, game.height, clonedPlayers);
-    return newGame;
+    return Game.createNewFromObject(game);
   };
 
   return Game;
