@@ -9,7 +9,7 @@ console.log('Listening on port '+port);
 app.listen(port);
 
 /* Game Classes */
-var Game = require('./public/js/game/gameLogic');
+var Game = require('./public/js/game/Game');
 var Player = require('./public/js/game/Player');
 
 // Client request handler

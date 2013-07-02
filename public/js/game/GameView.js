@@ -4,7 +4,7 @@ define(function(require) {
       Backbone = require('backbone'),
       eventBus = require('eventBus'),
       Kinetic  = require('kinetic'),
-      Game     = require('game/gameLogic'),
+      Game     = require('game/Game'),
       Player   = require('game/Player'),
       AI       = require('game/AI'),
       template = require('text!game/game.html');
