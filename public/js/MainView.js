@@ -45,11 +45,7 @@ define(function(require) {
     onSocketIOLoaded: function(io) {
       this.socket = io.connect(baseURL);
       var self = this;
-      this.socket.on('connect', function() {
-        console.log('Socket connected');
-      });
-      this.socket.on('reconnect', function() {
-        console.log('Socket reconnected');
+      var reconnect = function() {
         login(self.socket, self.nickname, function() {
           // Successful
           // If login is successful after reconnect, do nothing.
@@ -59,6 +55,22 @@ define(function(require) {
           // Redirect to main page
           console.log(window.location.href);
         });
+      };
+      this.socket.on('connect', function() {
+        if (self.nickname) {
+          console.log('Socket reconnected');
+        } else {
+          console.log('Socket connected');
+        }
+      });
+      this.socket.on('reconnect', function() {
+        // Not using this anymore as the server sometimes doesn't receive the reconnect
+        //console.log('Socket reconnected');
+        //reconnect();
+      });
+      this.socket.on('numPlayersOnline', function(numPlayers) {
+        if (self.nickname)
+          setTimeout(reconnect, 200);
       });
       this.socket.on('invitePlayer', function(fromNickname) {
         self.$el.append('<div class="notificationView"></div>');

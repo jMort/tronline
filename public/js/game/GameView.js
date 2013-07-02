@@ -78,9 +78,7 @@ define(function(require) {
       });
     },
     multiplayerInit: function() {
-      var left = WIDTH/2 - 55;
-      var top = HEIGHT/2 - 50;
-      this.$el.append('<h1 id="countdown" class="textGlow" style="position: absolute; left: '+left+'px; top: '+top+'px;">Ready!</h1>');
+      this.gameStarted = false;
       var countdown = 3;
       var self = this;
       this.socket.on('startCountdown', function() {
@@ -89,10 +87,18 @@ define(function(require) {
           if (countdown > 0) {
             countdown--;
           } else {
+            self.gameStarted = true;
             clearInterval(intervalId);
             self.$('#countdown').remove();
           }
         }, 1000);
+      });
+      this.socket.on('gameUpdate', function(game) {
+        self.game = Game.createNewFromObject(game);
+        var left = WIDTH/2 - 55;
+        var top = HEIGHT/2 - 50;
+        self.renderMultiplayer();
+        self.$el.append('<h1 id="countdown" class="textGlow" style="position: absolute; left: '+left+'px; top: '+top+'px;">Ready!</h1>');
       });
     },
     translatePoints: function(points) {
@@ -164,6 +170,75 @@ define(function(require) {
         }
         layer.draw();
         game.update();
+      }, 1000/30);
+      this.intervalId = intervalId;
+    },
+    renderMultiplayer: function() {
+      this.$el.hide().html(_.template(template)()).fadeIn(500);
+
+      var width  = this.game.width,
+          height = this.game.height;
+      var stage = new Kinetic.Stage({
+        container: 'gameCanvasContainer',
+        width: width,
+        height: height
+      });
+
+      var borderLayer = new Kinetic.Layer();
+      var leftLine = new Kinetic.Line({ points: [[5, 0], [5, height]], stroke: '#FFF', strokeWidth: 10 });
+      var bottomLine = new Kinetic.Line({ points: [[5, height-5-(height%10)/2], [width, height-5-(height%10)/2]], stroke: '#FFF', strokeWidth: 10+(height%10) });
+      var rightLine = new Kinetic.Line({ points: [[width-5-(width%10)/2, height], [width-5-(width%10)/2, 0]], stroke: '#FFF', strokeWidth: 10+(width%10) });
+      var topLine = new Kinetic.Line({ points: [[width-(width%10), 5], [5, 5]], stroke: '#FFF', strokeWidth: 10 });
+      borderLayer.add(leftLine);
+      borderLayer.add(bottomLine);
+      borderLayer.add(rightLine);
+      borderLayer.add(topLine);
+
+      var layer = new Kinetic.Layer();
+      stage.add(borderLayer);
+      stage.add(layer);
+
+      var game = this.game;
+      var self = this;
+      var intervalId = setInterval(function() {
+        layer.removeChildren();
+        var players = game.getPlayers();
+        for (var p = 0; p < players.length; p++) {
+          var player = players[p];
+          for (var i = 0; i < player.path.length-1; i++) {
+            var points = [[player.path[i][0], player.path[i][1]],
+                          [player.path[i+1][0], player.path[i+1][1]]];
+            if (points[0][0] === points[1][0]) {
+              // If it's a vertical line, expand the points vertically by half the stroke width
+              if (points[0][1] < points[1][1]) {
+                points[0][1] -= 5;
+                points[1][1] += 5;
+              } else {
+                points[0][1] += 5;
+                points[1][1] -= 5;
+              }
+            } else {
+              // If it's a horizontal line, expand the points horizontally by half the stroke width
+              if (points[0][0] < points[1][0]) {
+                points[0][0] -= 5;
+                points[1][0] += 5;
+              } else {
+                points[0][0] += 5;
+                points[1][0] -= 5;
+              }
+            }
+            var line = new Kinetic.Line({
+              points: self.translatePoints(points),
+              stroke: player.getColor(),
+              strokeWidth: 10
+            });
+            layer.add(line);
+          }
+        }
+        layer.draw();
+        // Only update if the game has started
+        if (self.gameStarted)
+          game.update();
       }, 1000/30);
       this.intervalId = intervalId;
     },

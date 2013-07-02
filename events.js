@@ -1,4 +1,4 @@
-module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdToPlayerName, pendingGames, playerColorList, indexOfKeyValuePairInArray, addToPending) {
+module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdToPlayerName, pendingGames, playerColorList, games, gameSnapshots, indexOfKeyValuePairInArray, addToPending) {
   // Sends event to all players in array `playerGroup`
   var sendEventToPlayerGroup = function(playerGroup, event, data) {
     for (var i in playerGroup) {
@@ -8,6 +8,30 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         }
       }
     }
+  };
+
+  // Determines the initial positions and directions for players in a game based on width and height
+  var initialPositions = function(width, height, margin, numPlayers) {
+    var positions = [];
+    if (numPlayers === 2) {
+      positions.push({x: margin, y: height/2, direction: 'E'});
+      positions.push({x: width-margin, y: height/2, direction: 'W'});
+    }
+    return positions;
+  };
+
+  // Calculates the average ping divided by 2 (one-way trip)
+  var calculateAveragePing = function(pingsArray) {
+    var sum = 0;
+    for (var i in pingsArray) {
+      sum += parseInt(pingsArray[i]);
+    }
+    return (sum/pingsArray.length)/2;
+  };
+
+  // Determines the game state X milliseconds ago
+  var determineGameStateXMillisAgo = function(game, millis) {
+    
   };
 
   return {
@@ -33,9 +57,11 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
     },
     sendMessage: function(socket, message) {
       var name = socketIdToPlayerName[socket.id];
-      message = message.replace(/</g, '&lt;');
-      message = message.replace(/>/g, '&gt;');
-      io.sockets.emit('receiveMessage', name+': '+message);
+      if (name !== undefined) {
+        message = message.replace(/</g, '&lt;');
+        message = message.replace(/>/g, '&gt;');
+        io.sockets.emit('receiveMessage', name+': '+message);
+      }
     },
     createMultiplayer: function(socket) {
       var fromNickname = socketIdToPlayerName[socket.id];
@@ -152,13 +178,24 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
             return (parseInt(b) - parseInt(a)) >= 0;
           });
 
+          var gamePlayers = [pendingGames[nickname].host].concat(pendingGames[nickname].accepted);
+          var positions = initialPositions(800, 600, 50, gamePlayers.length);
+          for (var p in positions) {
+            gamePlayers[p].path = [[positions[p].x, positions[p].y]];
+            gamePlayers[p].direction = positions[p].direction;
+          }
+          var game = new Game(800, 600, gamePlayers);
+          games[nickname] = game;
+          sendEventToPlayerGroup(group, 'gameUpdate', game);
+
+          // Send 'startCountdown' event to all players at times based on their latency
+          // so that each player's countdown will start at the same time
           var i = 0;
           var each = function() {
             var ping = sortedPings[i];
             for (j in pingToPlayerNames[ping]) {
               var nickname = pingToPlayerNames[ping][j];
               for (k in socketIdToPlayerName) {
-                console.log(socketIdToPlayerName[k]);
                 if (socketIdToPlayerName[k] === nickname) {
                   socketIdToSocket[k].emit('startCountdown');
                   break;
@@ -171,7 +208,34 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
             }
           };
           setTimeout(each, 0);
+
+          // Start the game loop after 3+1 seconds plus the fastest latency
+          // (this should start at the same time every player's countdown finishes)
+          // NOTE: The reason why it is 4 seconds instead of 3 is because the setInterval
+          //       function is being used client-side, and the way it works is that it
+          //       initially waits the interval time (making it wait an extra second).
+          setTimeout(function() {
+            var intervalId = setInterval(function() {
+              game.update();
+            }, 1000/30);
+          }, parseInt(sortedPings[0])+4000);
         }, 1000);
+      }
+    },
+    changeDirection: function(socket, hostNickname, direction) {
+      var nickname = socketIdToPlayerName[socket.id];
+      var playersInGame = games[hostNickname].getPlayers();
+      var playerInGame = false;
+      for (var i in playersInGame) {
+        if (playersInGame[i].nickname === nickname) {
+          playerInGame = true;
+          break;
+        }
+      }
+      if (playerInGame) {
+        var ping = calculateAveragePing(players[nickname]._pings);
+        // This clones the game as well as all players in it
+        var game = games[hostNickname].clone();
       }
     },
     disconnect: function(socket) {

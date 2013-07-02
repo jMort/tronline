@@ -70,7 +70,10 @@ var pendingGames = {};
 var playerColorList = ['#BB2200', '#0022BB', '#9900FF', '#FF00FF', '#FF6600', '#009933',
                         '#00FFCC', '#663300', '#FFFF47', '#00FF00', '#FFFFFF', '#999999',
                         '#003366', '#CCA300', '#7ACC52', '#A37547'];
-
+// games will be accessed using the player's nickname who created the game
+var games = {};
+// gameSnapshots will be accessed using the player's nickname and a time
+var gameSnapshots = {};
 var socketIdToSocket = {};
 var socketIdToPlayerName = {};
 
@@ -105,7 +108,7 @@ function addToPending(pendingGame, nickname) {
 var events = require('./events.js')(io,
                                     Game, Player,
                                     players, socketIdToSocket, socketIdToPlayerName, pendingGames,
-                                    playerColorList,
+                                    playerColorList, games, gameSnapshots,
                                     indexOfKeyValuePairInArray, addToPending);
 
 io.sockets.on('connection', function(socket) {
@@ -134,7 +137,7 @@ io.sockets.on('connection', function(socket) {
   setTimeout(each, 1);
 });
 
-var intervalId = setInterval(function() {
+var pingIntervalId = setInterval(function() {
   for (var i in socketIdToSocket) {
     if (i in socketIdToPlayerName) {
       players[socketIdToPlayerName[i]]._lastPingSentAt = new Date().getTime();
@@ -142,3 +145,20 @@ var intervalId = setInterval(function() {
     }
   }
 }, 1000);
+
+var snapshotIntervalId = setInterval(function() {
+  var currentTime = new Date().getTime();
+  for (var hostNickname in games) {
+    if (!(hostNickname in gameSnapshots)) {
+      gameSnapshots[hostNickname] = {};
+    }
+    // Clone game and add it to gameSnapshots for hostNickname at current timestamp
+    gameSnapshots[hostNickname][currentTime] = Game.clone(games[hostNickname]);
+
+    // Delete snapshots from longer than 5 seconds ago
+    for (var time in gameSnapshots[hostNickname]) {
+      if (currentTime - time > 5000)
+        delete gameSnapshots[hostNickname][time];
+    }
+  }
+}, 20);
