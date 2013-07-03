@@ -96,7 +96,7 @@ define(function(require) {
         var opposites = { 'N': 'S', 'S': 'N', 'E': 'W', 'W': 'E' };
         var opposite = opposites[self.direction];
         directions.splice(directions.indexOf(opposite), 1);
-        if ($.inArray(direction, directions) != -1) {
+        if (directions.indexOf(direction) != -1) {
           self.direction = direction;
         }
       }
@@ -158,12 +158,23 @@ define(function(require) {
     };
   };
 
+  // Makes sure position is at a multiple of 10 and returns it
+  Player.cleanPosition = function(x, y) {
+    while ((x-5) % 10)
+      x++;
+    while ((y-5) % 10)
+      y++;
+    return [x, y];
+  };
+
   // This is used to create a new Player object with the same data as on the server.
   // It is needed as socket.io doesn't send functions contained within an object, only data.
   Player.createNewFromObject = function(obj) {
     var player = new Player(obj.nickname, obj.path[0][0], obj.path[0][1], obj.speed, obj.direction,
                             obj.color);
     player.path = obj.path;
+    player.nextDirection = obj.nextDirection;
+    player.active = obj.active;
     player._pings = obj._pings;
     player._lastPingSentAt = obj._lastPingSentAt;
     return player;

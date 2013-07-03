@@ -30,6 +30,7 @@ define(function(require) {
       } else if (options.multiplayer) {
         this.socket = options.socket;
         this.hostNickname = options.hostNickname;
+        this.nickname = options.nickname;
         this.multiplayerInit();
       } else {
         this.singlePlayerInit();
@@ -94,11 +95,40 @@ define(function(require) {
         }, 1000);
       });
       this.socket.on('gameUpdate', function(game) {
-        self.game = Game.createNewFromObject(game);
-        var left = WIDTH/2 - 55;
-        var top = HEIGHT/2 - 50;
-        self.renderMultiplayer();
-        self.$el.append('<h1 id="countdown" class="textGlow" style="position: absolute; left: '+left+'px; top: '+top+'px;">Ready!</h1>');
+        if (!(self.game)) {
+          self.game = Game.createNewFromObject(game);
+          var left = WIDTH/2 - 55;
+          var top = HEIGHT/2 - 50;
+          self.renderMultiplayer();
+          self.$el.append('<h1 id="countdown" class="textGlow" style="position: absolute; left: '+left+'px; top: '+top+'px;">Ready!</h1>');
+        } else {
+          self.game = Game.createNewFromObject(game);
+        }
+        var players = self.game.getPlayers();
+        for (var i in players) {
+          if (players[i].nickname === self.nickname) {
+            var player = players[i];
+            break;
+          }
+        }
+
+        // We need to use 'one' instead of 'bind' to stop it picking up a keydown event
+        // multiple times and spamming the server, making the game really slow.
+        $(window).one('keydown', function(e) {
+          if (e.keyCode == LEFT) {
+            player.updateDirection('W');
+            self.socket.emit('changeDirection', self.hostNickname, 'W');
+          } else if (e.keyCode == UP) {
+            player.updateDirection('N');
+            self.socket.emit('changeDirection', self.hostNickname, 'N');
+          } else if (e.keyCode == RIGHT) {
+            player.updateDirection('E');
+            self.socket.emit('changeDirection', self.hostNickname, 'E');
+          } else if (e.keyCode == DOWN) {
+            player.updateDirection('S');
+            self.socket.emit('changeDirection', self.hostNickname, 'S');
+          }
+        });
       });
     },
     translatePoints: function(points) {
@@ -180,15 +210,16 @@ define(function(require) {
           height = this.game.height;
       var stage = new Kinetic.Stage({
         container: 'gameCanvasContainer',
-        width: width,
-        height: height
+        width: width+20,
+        height: height+20
       });
 
+      // All multiplayer games will have widths and heights that are divisible by 10
       var borderLayer = new Kinetic.Layer();
-      var leftLine = new Kinetic.Line({ points: [[5, 0], [5, height]], stroke: '#FFF', strokeWidth: 10 });
-      var bottomLine = new Kinetic.Line({ points: [[5, height-5-(height%10)/2], [width, height-5-(height%10)/2]], stroke: '#FFF', strokeWidth: 10+(height%10) });
-      var rightLine = new Kinetic.Line({ points: [[width-5-(width%10)/2, height], [width-5-(width%10)/2, 0]], stroke: '#FFF', strokeWidth: 10+(width%10) });
-      var topLine = new Kinetic.Line({ points: [[width-(width%10), 5], [5, 5]], stroke: '#FFF', strokeWidth: 10 });
+      var leftLine = new Kinetic.Line({ points: [[5, 0], [5, height+20]], stroke: '#FFF', strokeWidth: 10 });
+      var bottomLine = new Kinetic.Line({ points: [[5, height+15], [width+15, height+15]], stroke: '#FFF', strokeWidth: 10 });
+      var rightLine = new Kinetic.Line({ points: [[width+15, height+20], [width+15, 0]], stroke: '#FFF', strokeWidth: 10 });
+      var topLine = new Kinetic.Line({ points: [[width+10, 5], [5, 5]], stroke: '#FFF', strokeWidth: 10 });
       borderLayer.add(leftLine);
       borderLayer.add(bottomLine);
       borderLayer.add(rightLine);
@@ -198,11 +229,10 @@ define(function(require) {
       stage.add(borderLayer);
       stage.add(layer);
 
-      var game = this.game;
       var self = this;
       var intervalId = setInterval(function() {
         layer.removeChildren();
-        var players = game.getPlayers();
+        var players = self.game.getPlayers();
         for (var p = 0; p < players.length; p++) {
           var player = players[p];
           for (var i = 0; i < player.path.length-1; i++) {
@@ -238,7 +268,7 @@ define(function(require) {
         layer.draw();
         // Only update if the game has started
         if (self.gameStarted)
-          game.update();
+          self.game.update();
       }, 1000/30);
       this.intervalId = intervalId;
     },

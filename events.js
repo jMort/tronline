@@ -5,6 +5,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
       for (var j in socketIdToPlayerName) {
         if (socketIdToPlayerName[j] == playerGroup[i].nickname) {
           socketIdToSocket[j].emit(event, data);
+          break;
         }
       }
     }
@@ -16,6 +17,13 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
     if (numPlayers === 2) {
       positions.push({x: margin, y: height/2, direction: 'E'});
       positions.push({x: width-margin, y: height/2, direction: 'W'});
+    }
+
+    // Now clean all positions by making sure they are at multiples of 10
+    for (var i in positions) {
+      var newPosition = Player.cleanPosition(positions[i].x, positions[i].y);
+      positions[i].x = newPosition[0];
+      positions[i].y = newPosition[1];
     }
     return positions;
   };
@@ -225,17 +233,24 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
     changeDirection: function(socket, hostNickname, direction) {
       var nickname = socketIdToPlayerName[socket.id];
       var playersInGame = games[hostNickname].getPlayers();
-      var playerInGame = false;
+      var playerIsInGame = false;
+      var playerIndex = -1;
       for (var i in playersInGame) {
         if (playersInGame[i].nickname === nickname) {
-          playerInGame = true;
+          playerIsInGame = true;
+          playerIndex = i;
           break;
         }
       }
-      if (playerInGame) {
+      if (playerIsInGame) {
         var ping = calculateAveragePing(players[nickname]._pings);
         // This clones the game as well as all players in it
-        var game = games[hostNickname].clone();
+        var game = Game.clone(games[hostNickname]);
+        // Now we need to look at the closest snapshot to the time the player actually made the move
+
+        // Now make the move. NOTE: The direction is validated in the Player class
+        games[hostNickname].getPlayers()[playerIndex].updateDirection(direction);
+        sendEventToPlayerGroup(games[hostNickname].getPlayers(), 'gameUpdate', games[hostNickname]);
       }
     },
     disconnect: function(socket) {

@@ -89,6 +89,7 @@ define(function(require) {
         self.showLogin();
       });
       eventBus.on('showLobby', function(nickname) {
+        // Once the player logs in, store their nickname in the MainView
         if (nickname)
           self.nickname = nickname;
         self.loginView.destroy();
@@ -214,7 +215,7 @@ define(function(require) {
       this.$el.html('');
       this.$el.append('<div class="gameView"></div>');
       var gameView = new GameView({ el: this.$('.gameView'), multiplayer: true, socket: this.socket,
-                                    hostNickname: hostNickname});
+                                    hostNickname: hostNickname, nickname: this.nickname });
       this.gameView = gameView;
     },
     showMultiplayerSetup: function(options) {
