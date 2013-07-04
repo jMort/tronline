@@ -38,8 +38,41 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
   };
 
   // Determines the game state X milliseconds ago
-  var determineGameStateXMillisAgo = function(game, millis) {
-    
+  var determineGameStateXMillisAgo = function(gameHostNickname, millis) {
+    var currentTime = new Date().getTime();
+    var targetTime = currentTime - millis;
+    var game = null;
+    var timestamp = null;
+    for (var t in gameSnapshots[gameHostNickname]) {
+      if (timestamp == null || Math.abs(targetTime - t) < Math.abs(targetTime - timestamp)) {
+        game = gameSnapshots[gameHostNickname][t];
+        timestamp = t;
+      }
+    }
+    return Game.clone(game);
+  };
+
+  // Fast forwards a player ahead by X milliseconds and returns the new player
+  var fastForwardPlayerByXMillis = function(player, millis) {
+    var newPlayer = Player.clone(player);
+    var frames = parseInt(millis/(1000/30));
+    for (var i = 0; i < frames; i++)
+      newPlayer.move();
+
+    return newPlayer;
+  };
+
+  // Fast forwards a whole game ahead by X milliseconds and returns the new game
+  var fastForwardGameByXMillis = function(game, millis) {
+    var players = game.getPlayers();
+    var newPlayers = [];
+    for (var i in players) {
+      newPlayers.push(fastForwardPlayerByXMillis(players[i], millis));
+    }
+    var newGame = Game.clone(game);
+    newGame.players = newPlayers;
+
+    return newGame;
   };
 
   return {
@@ -150,10 +183,12 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         // If nickname is in game or nickname is host
         if (index != -1 || nickname === hostNickname) {
           var colorValid = true;
+          // Check that no other player is already this color (excluding host)
           for (var i in pendingGames[hostNickname].accepted) {
             if (pendingGames[hostNickname].accepted[i].getColor() === color)
               colorValid = false;
           }
+          // Check that the host is not already this color
           if (pendingGames[hostNickname].host.getColor() === color)
             colorValid = false;
           if (colorValid) {
@@ -163,7 +198,6 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
           }
         }
       }
-      var index = indexOfKeyValuePairInArray(pendingGames[hostNickname].accepted, 'nickname', nickname);
     },
     startGame: function(socket) {
       var nickname = socketIdToPlayerName[socket.id];
@@ -201,9 +235,9 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
           var i = 0;
           var each = function() {
             var ping = sortedPings[i];
-            for (j in pingToPlayerNames[ping]) {
+            for (var j in pingToPlayerNames[ping]) {
               var nickname = pingToPlayerNames[ping][j];
-              for (k in socketIdToPlayerName) {
+              for (var k in socketIdToPlayerName) {
                 if (socketIdToPlayerName[k] === nickname) {
                   socketIdToSocket[k].emit('startCountdown');
                   break;
@@ -243,14 +277,61 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         }
       }
       if (playerIsInGame) {
+        // Calculate the average ping across the past 5 seconds of data
+        // This is the one-way trip
         var ping = calculateAveragePing(players[nickname]._pings);
-        // This clones the game as well as all players in it
-        var game = Game.clone(games[hostNickname]);
-        // Now we need to look at the closest snapshot to the time the player actually made the move
+
+        // We need to look at the closest snapshot to the time the player actually made the move
+        var game = determineGameStateXMillisAgo(hostNickname, ping);
+        var newPlayer = game.getPlayers()[playerIndex];
 
         // Now make the move. NOTE: The direction is validated in the Player class
-        games[hostNickname].getPlayers()[playerIndex].updateDirection(direction);
-        sendEventToPlayerGroup(games[hostNickname].getPlayers(), 'gameUpdate', games[hostNickname]);
+        newPlayer.updateDirection(direction);
+
+        // Simulate player forward in time by its ping
+        newPlayer = fastForwardPlayerByXMillis(newPlayer, ping);
+
+        // Replace player with new up-to-date player
+        games[hostNickname].players[playerIndex] = newPlayer;
+        players[nickname] = newPlayer;
+
+        // Sort the pings of every player
+        var pingToPlayerNames = {};
+        var playersInGame = games[hostNickname].getPlayers()
+        for (var i in playersInGame) {
+          var sum = 0;
+          for (var j in playersInGame[i]._pings)
+            sum += playersInGame[i]._pings[j];
+          var ping = parseInt((sum/players[playersInGame[i].nickname]._pings.length)/2);
+          if (ping in pingToPlayerNames)
+            pingToPlayerNames[ping].push(playersInGame[i].nickname);
+          else
+            pingToPlayerNames[ping] = [playersInGame[i].nickname];
+        }
+        var sortedPings = Object.keys(pingToPlayerNames).sort(function(a, b) {
+          return (parseInt(b) - parseInt(a)) >= 0;
+        });
+
+        // Simulate the whole game forward based on each player's ping
+        // so that when the game state arrives it is in sync with the server.
+        var i = 0;
+        var each = function() {
+          var ping = sortedPings[i];
+          for (var j in pingToPlayerNames[ping]) {
+            var nickname = pingToPlayerNames[ping][j];
+            for (var k in socketIdToPlayerName) {
+              if (socketIdToPlayerName[k] === nickname) {
+                socketIdToSocket[k].emit('gameUpdate', fastForwardGameByXMillis(games[hostNickname], ping));
+                break;
+              }
+            }
+          }
+          i++;
+          if (i < sortedPings.length) {
+            setTimeout(each, ping-sortedPings[i]);
+          }
+        };
+        setTimeout(each, 0);
       }
     },
     disconnect: function(socket) {
