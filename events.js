@@ -14,7 +14,9 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
   // Determines the initial positions and directions for players in a game based on width and height
   var initialPositions = function(width, height, margin, numPlayers) {
     var positions = [];
-    if (numPlayers === 2) {
+    if (numPlayers === 1) {
+      positions.push({x: margin, y: height/2, direction: 'E'});
+    } else if (numPlayers === 2) {
       positions.push({x: margin, y: height/2, direction: 'E'});
       positions.push({x: width-margin, y: height/2, direction: 'W'});
     }
@@ -75,44 +77,49 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
     return newGame;
   };
 
-  var broadcastGameState = function(hostNickname) {
-    // Sort the pings of every player
-    var pingToPlayerNames = {};
-    var playersInGame = games[hostNickname].getPlayers()
-    for (var i in playersInGame) {
-      var sum = 0;
-      for (var j in playersInGame[i]._pings)
-        sum += playersInGame[i]._pings[j];
-      var ping = parseInt((sum/players[playersInGame[i].nickname]._pings.length)/2);
-      if (ping in pingToPlayerNames)
-        pingToPlayerNames[ping].push(playersInGame[i].nickname);
-      else
-        pingToPlayerNames[ping] = [playersInGame[i].nickname];
-    }
-    var sortedPings = Object.keys(pingToPlayerNames).sort(function(a, b) {
-      return (parseInt(b) - parseInt(a)) >= 0;
-    });
+  var broadcastGameState = function(hostNickname, intervalId) {
+    if (hostNickname in games) {
+      // Sort the pings of every player
+      var pingToPlayerNames = {};
+      var playersInGame = games[hostNickname].getPlayers()
+      for (var i in playersInGame) {
+        var sum = 0;
+        for (var j in playersInGame[i]._pings)
+          sum += playersInGame[i]._pings[j];
+        var ping = parseInt((sum/players[playersInGame[i].nickname]._pings.length)/2);
+        if (ping in pingToPlayerNames)
+          pingToPlayerNames[ping].push(playersInGame[i].nickname);
+        else
+          pingToPlayerNames[ping] = [playersInGame[i].nickname];
+      }
+      var sortedPings = Object.keys(pingToPlayerNames).sort(function(a, b) {
+        return (parseInt(b) - parseInt(a)) >= 0;
+      });
 
-    // Simulate the whole game forward based on each player's ping
-    // so that when the game state arrives it is in sync with the server.
-    var i = 0;
-    var each = function() {
-      var ping = sortedPings[i];
-      for (var j in pingToPlayerNames[ping]) {
-        var nickname = pingToPlayerNames[ping][j];
-        for (var k in socketIdToPlayerName) {
-          if (socketIdToPlayerName[k] === nickname) {
-            socketIdToSocket[k].emit('gameUpdate', fastForwardGameByXMillis(games[hostNickname], ping));
-            break;
+      // Simulate the whole game forward based on each player's ping
+      // so that when the game state arrives it is in sync with the server.
+      var i = 0;
+      var each = function() {
+        var ping = sortedPings[i];
+        for (var j in pingToPlayerNames[ping]) {
+          var nickname = pingToPlayerNames[ping][j];
+          for (var k in socketIdToPlayerName) {
+            if (socketIdToPlayerName[k] === nickname) {
+              socketIdToSocket[k].emit('gameUpdate', fastForwardGameByXMillis(games[hostNickname], ping));
+              break;
+            }
           }
         }
-      }
-      i++;
-      if (i < sortedPings.length) {
-        setTimeout(each, ping-sortedPings[i]);
-      }
-    };
-    setTimeout(each, 0);
+        i++;
+        if (i < sortedPings.length) {
+          setTimeout(each, ping-sortedPings[i]);
+        }
+      };
+      setTimeout(each, 0);
+    } else {
+      if (intervalId)
+        clearInterval(intervalId);
+    }
   };
 
   return {
@@ -304,7 +311,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
               game.update();
             }, 1000/30);
             var broadcastIntervalId = setInterval(function() {
-              broadcastGameState(nickname);
+              broadcastGameState(nickname, broadcastIntervalId);
             }, 500);
           }, parseInt(sortedPings[0])+4000);
         }, 1000);
