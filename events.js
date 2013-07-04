@@ -75,6 +75,46 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
     return newGame;
   };
 
+  var broadcastGameState = function(hostNickname) {
+    // Sort the pings of every player
+    var pingToPlayerNames = {};
+    var playersInGame = games[hostNickname].getPlayers()
+    for (var i in playersInGame) {
+      var sum = 0;
+      for (var j in playersInGame[i]._pings)
+        sum += playersInGame[i]._pings[j];
+      var ping = parseInt((sum/players[playersInGame[i].nickname]._pings.length)/2);
+      if (ping in pingToPlayerNames)
+        pingToPlayerNames[ping].push(playersInGame[i].nickname);
+      else
+        pingToPlayerNames[ping] = [playersInGame[i].nickname];
+    }
+    var sortedPings = Object.keys(pingToPlayerNames).sort(function(a, b) {
+      return (parseInt(b) - parseInt(a)) >= 0;
+    });
+
+    // Simulate the whole game forward based on each player's ping
+    // so that when the game state arrives it is in sync with the server.
+    var i = 0;
+    var each = function() {
+      var ping = sortedPings[i];
+      for (var j in pingToPlayerNames[ping]) {
+        var nickname = pingToPlayerNames[ping][j];
+        for (var k in socketIdToPlayerName) {
+          if (socketIdToPlayerName[k] === nickname) {
+            socketIdToSocket[k].emit('gameUpdate', fastForwardGameByXMillis(games[hostNickname], ping));
+            break;
+          }
+        }
+      }
+      i++;
+      if (i < sortedPings.length) {
+        setTimeout(each, ping-sortedPings[i]);
+      }
+    };
+    setTimeout(each, 0);
+  };
+
   return {
     pingIn: function(socket) {
       if (players[socketIdToPlayerName[socket.id]]._pings.length == 5)
@@ -260,6 +300,9 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
             var intervalId = setInterval(function() {
               game.update();
             }, 1000/30);
+            var broadcastIntervalId = setInterval(function() {
+              broadcastGameState(nickname);
+            }, 500);
           }, parseInt(sortedPings[0])+4000);
         }, 1000);
       }
@@ -295,43 +338,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         games[hostNickname].players[playerIndex] = newPlayer;
         players[nickname] = newPlayer;
 
-        // Sort the pings of every player
-        var pingToPlayerNames = {};
-        var playersInGame = games[hostNickname].getPlayers()
-        for (var i in playersInGame) {
-          var sum = 0;
-          for (var j in playersInGame[i]._pings)
-            sum += playersInGame[i]._pings[j];
-          var ping = parseInt((sum/players[playersInGame[i].nickname]._pings.length)/2);
-          if (ping in pingToPlayerNames)
-            pingToPlayerNames[ping].push(playersInGame[i].nickname);
-          else
-            pingToPlayerNames[ping] = [playersInGame[i].nickname];
-        }
-        var sortedPings = Object.keys(pingToPlayerNames).sort(function(a, b) {
-          return (parseInt(b) - parseInt(a)) >= 0;
-        });
-
-        // Simulate the whole game forward based on each player's ping
-        // so that when the game state arrives it is in sync with the server.
-        var i = 0;
-        var each = function() {
-          var ping = sortedPings[i];
-          for (var j in pingToPlayerNames[ping]) {
-            var nickname = pingToPlayerNames[ping][j];
-            for (var k in socketIdToPlayerName) {
-              if (socketIdToPlayerName[k] === nickname) {
-                socketIdToSocket[k].emit('gameUpdate', fastForwardGameByXMillis(games[hostNickname], ping));
-                break;
-              }
-            }
-          }
-          i++;
-          if (i < sortedPings.length) {
-            setTimeout(each, ping-sortedPings[i]);
-          }
-        };
-        setTimeout(each, 0);
+        broadcastGameState(hostNickname);
       }
     },
     disconnect: function(socket) {
