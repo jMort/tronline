@@ -270,6 +270,9 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
           games[nickname] = game;
           sendEventToPlayerGroup(group, 'gameUpdate', game);
 
+          // Remove game from pendingGames
+          delete pendingGames[nickname];
+
           // Send 'startCountdown' event to all players at times based on their latency
           // so that each player's countdown will start at the same time
           var i = 0;
@@ -343,14 +346,14 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
     },
     disconnect: function(socket) {
       console.log('User disconnected');
-      if (socketIdToPlayerName[socket.id] in pendingGames) {
+      var nickname = socketIdToPlayerName[socket.id];
+      if (nickname in pendingGames) {
         // If player is the host of a game, notify all players in the game that the game has been removed
-        var game = pendingGames[socketIdToPlayerName[socket.id]];
+        var game = pendingGames[nickname];
         var group = game.accepted.concat(game.pending);
         sendEventToPlayerGroup(group, 'gameCancelled', game.host.nickname);
         delete pendingGames[socketIdToPlayerName[socket.id]];
       } else {
-        var nickname = socketIdToPlayerName[socket.id];
         for (var game in pendingGames) {
           var acceptedIndex = indexOfKeyValuePairInArray(pendingGames[game].accepted, 'nickname', nickname);
           var pendingIndex = indexOfKeyValuePairInArray(pendingGames[game].pending, 'nickname', nickname);
@@ -366,6 +369,11 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
             sendEventToPlayerGroup(group, 'playersInGameUpdate', pendingGames[game]);
           }
         }
+      }
+
+      if (nickname in games) {
+        delete games[nickname];
+        delete gameSnapshots[nickname];
       }
 
       delete socketIdToSocket[socket.id];
