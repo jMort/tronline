@@ -17,12 +17,33 @@ define(function(require) {
       expect(player.getDirection()).toBe('E');
       player.updateDirection('S');
       expect(player.getDirection()).toBe('S');
+      player.move();
+      player.move();
       player.updateDirection('E');
       expect(player.getDirection()).toBe('E');
-      /*player.updateDirection('N');
+      player.move();
+      player.move();
+      player.updateDirection('N');
       expect(player.getDirection()).toBe('N');
+      player.move();
+      player.move();
       player.updateDirection('W');
-      expect(player.getDirection()).toBe('W');*/
+      expect(player.getDirection()).toBe('W');
+    });
+
+    it('should be able to clone other Player objects', function() {
+      var player = new Player('testPlayer', 50, 50, 5, 'E', '#F00');
+      var clonedPlayer = Player.clone(player);
+      clonedPlayer.nickname = 'anotherName';
+      expect(player.nickname).toNotEqual(clonedPlayer.nickname);
+      for (var i = 0; i < 12; i++) {
+        clonedPlayer.move();
+      }
+      clonedPlayer.updateDirection('S');
+      for (var i = 0; i < 4; i++) {
+        clonedPlayer.move();
+      }
+      expect(clonedPlayer.getPath().length).toNotEqual(player.getPath().length);
     });
   });
 });

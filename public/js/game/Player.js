@@ -172,7 +172,10 @@ define(function(require) {
   Player.createNewFromObject = function(obj) {
     var player = new Player(obj.nickname, obj.path[0][0], obj.path[0][1], obj.speed, obj.direction,
                             obj.color);
-    player.path = obj.path;
+    player.path = [];
+    for (var i in obj.path) {
+      player.path.push([obj.path[i][0], obj.path[i][1]]);
+    }
     player.nextDirection = obj.nextDirection;
     player.active = obj.active;
     player._pings = obj._pings;
