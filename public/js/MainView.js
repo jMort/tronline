@@ -99,9 +99,11 @@ define(function(require) {
           self.multiplayerSetupView.$el.slideLeft(500, function() {
             self.multiplayerSetupView.destroy();
             delete self.multiplayerSetupView;
-            self.showHome(self.nickname);
+            if (!(self.gameView))
+              self.showHome(self.nickname);
           });
-        } else if (self.gameView) {
+        }
+        if (self.gameView) {
           normal = false;
           self.gameView.$el.fadeOut(500, function() {
             self.gameView.teardown();

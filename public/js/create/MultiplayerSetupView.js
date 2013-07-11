@@ -60,7 +60,7 @@ define(function(require) {
         eventBus.trigger('showLobby');
       });
       this.socket.on('gameStarting', function() {
-        Backbone.history.navigate('/home/play/multiplayer');
+        Backbone.history.navigate('/home/play/multiplayer', { replace: true });
         eventBus.trigger('playMultiplayer', self.hostNickname);
       });
       this.render();
