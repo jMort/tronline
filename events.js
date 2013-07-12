@@ -312,7 +312,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
             }, 1000/30);
             var broadcastIntervalId = setInterval(function() {
               broadcastGameState(nickname, broadcastIntervalId);
-            }, 500);
+            }, 1000);
           }, parseInt(sortedPings[0])+4000);
         }, 1000);
       }
