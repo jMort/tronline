@@ -294,7 +294,7 @@ define(function(require) {
         else
           return true;
       });
-      // If the gameOverView doesn't already exsit
+      // If the gameOverView doesn't already exist
       if (this.$('.gameOverView').length == 0) {
         this.$el.append('<div class="gameOverView"></div>');
         var gameOverView = new GameOverView({ el: this.$('.gameOverView'), results: results });
