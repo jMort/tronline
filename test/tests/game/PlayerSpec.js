@@ -3,12 +3,36 @@ define(function(require) {
 
   describe('Player', function() {
 
-    it('should have getters and setters', function() {
-      var player = new Player('testPlayer', 0, 0, 5, 'E', '#F00');
-      expect(player.getHead).toBeTypeOf('function');
-      expect(player.getPath).toBeTypeOf('function');
-      expect(player.getDirection).toBeTypeOf('function');
-      expect(player.getColor).toBeTypeOf('function');
+    it('should calculate its own length correctly', function() {
+      var player = new Player('testPlayer', 50, 50, 5, 'E', '#F00');
+      expect(player.calculateLength()).toBe(0);
+      player.move();
+      player.move();
+      expect(player.calculateLength()).toBe(10);
+      player.updateDirection('S');
+      expect(player.calculateLength()).toBe(10);
+      player.move();
+      expect(player.calculateLength()).toBe(15);
+    });
+
+    it('should calculate the distance between the last two nodes', function() {
+      var player = new Player('testPlayer', 50, 50, 5, 'E', '#F00');
+      expect(player.lastDistance()).toBe(0);
+      player.move();
+      player.move();
+      expect(player.lastDistance()).toBe(10);
+      player.updateDirection('S');
+      player.move();
+      player.move()
+      expect(player.lastDistance()).toBe(10);
+      player.move();
+      expect(player.lastDistance()).toBe(15);
+      player.updateDirection('E');
+      player.move();
+      player.move();
+      player.move();
+      player.move();
+      expect(player.lastDistance()).toBe(20);
     });
 
     it('should change direction when updateDirection is called \

@@ -71,8 +71,21 @@ define(function(require) {
 
     this.lastDistance = function() {
       var last = self.path.length - 1;
-      return Math.abs(self.path[last][0] - self.path[last-1][0]) +
-             Math.abs(self.path[last][1] - self.path[last-1][1]);
+      var distance = 0;
+      if (last > 0) {
+        distance = Math.abs(self.path[last][0] - self.path[last-1][0]) +
+                   Math.abs(self.path[last][1] - self.path[last-1][1]);
+      }
+      return distance;
+    };
+
+    this.calculateLength = function() {
+      var length = 0;
+      for (var i = 0; i < self.path.length-1; i++) {
+        length += Math.abs(self.path[i+1][0] - self.path[i][0]);
+        length += Math.abs(self.path[i+1][1] - self.path[i][1]);
+      }
+      return length;
     };
 
     this.updateDirection = function(direction) {
