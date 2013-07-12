@@ -1,13 +1,14 @@
 define(function(require) {
-  var $        = require('jquery'),
-      _        = require('underscore'),
-      Backbone = require('backbone'),
-      eventBus = require('eventBus'),
-      Kinetic  = require('kinetic'),
-      Game     = require('game/Game'),
-      Player   = require('game/Player'),
-      AI       = require('game/AI'),
-      template = require('text!game/game.html');
+  var $            = require('jquery'),
+      _            = require('underscore'),
+      Backbone     = require('backbone'),
+      eventBus     = require('eventBus'),
+      Kinetic      = require('kinetic'),
+      Game         = require('game/Game'),
+      Player       = require('game/Player'),
+      AI           = require('game/AI'),
+      GameOverView = require('game/GameOverView'),
+      template     = require('text!game/game.html');
 
   var LEFT  = 37,
       UP    = 38,
@@ -24,13 +25,13 @@ define(function(require) {
       HEIGHT = $(window).height();
       this.renderedWidth = WIDTH-20-(WIDTH%10);
       this.renderedHeight = HEIGHT-20-(HEIGHT%10);
+      this.nickname = options.nickname;
       if (options.headToHead) {
         this.headToHeadInit();
         this.render();
       } else if (options.multiplayer) {
         this.socket = options.socket;
         this.hostNickname = options.hostNickname;
-        this.nickname = options.nickname;
         this.multiplayerInit();
       } else {
         this.singlePlayerInit();
@@ -38,11 +39,14 @@ define(function(require) {
       }
     },
     singlePlayerInit: function() {
-      var player = new Player('', 45, parseInt(this.renderedHeight/2), 5, 'E', '#BB2200');
+      var player = new Player(this.nickname, 45, parseInt(this.renderedHeight/2), 5, 'E', '#BB2200');
       var aiLogic = new AI(this.renderedWidth, this.renderedHeight);
-      var aiPlayer = new Player('', this.renderedWidth-45, parseInt(this.renderedHeight/2), 5, 'W', '#0022BB', aiLogic);
+      var aiPlayer = new Player('AI', this.renderedWidth-45, parseInt(this.renderedHeight/2), 5, 'W', '#0022BB', aiLogic);
       this.players = [player, aiPlayer];
-      this.game = new Game(this.renderedWidth, this.renderedHeight, this.players);
+      var self = this;
+      this.game = new Game(this.renderedWidth, this.renderedHeight, this.players, function() {
+        self.displayGameOver();
+      });
       $(window).bind('keydown', function(e) {
         if (e.keyCode == LEFT)
           player.updateDirection('W');
@@ -55,10 +59,13 @@ define(function(require) {
       });
     },
     headToHeadInit: function() {
-      var player1 = new Player('', 45, parseInt(this.renderedHeight/2), 5, 'E', '#BB2200');
-      var player2 = new Player('', this.renderedWidth-45, parseInt(this.renderedHeight/2), 5, 'W', '#0022BB');
+      var player1 = new Player('PLAYER 1', 45, parseInt(this.renderedHeight/2), 5, 'E', '#BB2200');
+      var player2 = new Player('PLAYER 2', this.renderedWidth-45, parseInt(this.renderedHeight/2), 5, 'W', '#0022BB');
       this.players = [player1, player2];
-      this.game = new Game(this.renderedWidth, this.renderedHeight, this.players);
+      var self = this;
+      this.game = new Game(this.renderedWidth, this.renderedHeight, this.players, function() {
+        self.displayGameOver();
+      });
       $(window).bind('keydown', function(e) {
         if (e.keyCode == LEFT)
           player2.updateDirection('W');
@@ -271,6 +278,27 @@ define(function(require) {
           self.game.update();
       }, 1000/30);
       this.intervalId = intervalId;
+    },
+    displayGameOver: function() {
+      var results = [];
+      var players = this.game.getPlayers();
+      for (var i in players) {
+        results.push({ nickname: players[i].nickname, score: players[i].calculateLength(),
+                       alive: players[i].active });
+      }
+      results.sort(function(a, b) {
+        if ((a.alive && b.alive) || (!a.alive && !b.alive))
+          return b.score > a.score;
+        else if (a.alive && !b.alive)
+          return false;
+        else
+          return true;
+      });
+      // If the gameOverView doesn't already exsit
+      if (this.$('.gameOverView').length == 0) {
+        this.$el.append('<div class="gameOverView"></div>');
+        var gameOverView = new GameOverView({ el: this.$('.gameOverView'), results: results });
+      }
     },
     teardown: function() {
       clearInterval(this.intervalId);

@@ -204,13 +204,14 @@ define(function(require) {
     showSinglePlayer: function() {
       this.$el.html('');
       this.$el.append('<div class="gameView"></div>');
-      var gameView = new GameView({ el: this.$('.gameView') });
+      var gameView = new GameView({ el: this.$('.gameView'), nickname: this.nickname });
       this.gameView = gameView;
     },
     showHeadToHead: function() {
       this.$el.html('');
       this.$el.append('<div class="gameView"></div>');
-      var gameView = new GameView({ el: this.$('.gameView'), headToHead: true });
+      var gameView = new GameView({ el: this.$('.gameView'), headToHead: true,
+                                    nickname: this.nickname });
       this.gameView = gameView;
     },
     showMultiplayer: function(hostNickname) {

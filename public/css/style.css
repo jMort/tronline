@@ -516,3 +516,38 @@ div.notificationView div button.red:hover {
     background-color: #F84;
     border: 1px solid #F61;
 }
+
+/* GameOverView */
+div.gameOverView h3 {
+    text-align: center;
+    color: #DDD;
+    margin: 0;
+}
+div.gameOverView button {
+    background-color: #CCC;
+    padding: 5px 12px;
+    font-family: "Courier New";
+    font-size: 14pt;
+    font-weight: bold;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    border: 1px solid #CCC;
+    -webkit-transition: background-color 0.15s linear, border 0.15s linear;
+    -moz-transition: background-color 0.15s linear, border 0.15s linear;
+    -o-transition: background-color 0.15s linear, border 0.15s linear;
+    transition: background-color 0.15s linear, border 0.15s linear;
+}
+div.gameOverView button:hover {
+    color: #111;
+    background-color: #AAA;
+    border: 1px solid #AAA;
+    -webkit-transition: background-color 0.15s linear, border 0.15s linear;
+    -moz-transition: background-color 0.15s linear, border 0.15s linear;
+    -o-transition: background-color 0.15s linear, border 0.15s linear;
+    transition: background-color 0.15s linear, border 0.15s linear;
+    cursor: pointer;
+}
+div.gameOverView button#continue {
+    float: right;
+}

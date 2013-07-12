@@ -1,0 +1,21 @@
+<div class="gameOverContainer" style="position: absolute; left: 50%; top: 50%;">
+	<h1>Game Over</h1>
+	<table>
+		<thead>
+			<tr><th></th><th><h3 style="padding: 0 10px;">Nickname</h3></th><th><h3>Score</h3></th></tr>
+		</thead>
+		<tbody>
+			<% for (var i in results) { %>
+			<tr>
+				<td><h3><%= parseInt(i)+1 %>.</h3></td>
+				<td><h3><%= results[i].nickname %></h3></td>
+				<td><h3><%= results[i].score %></h3></td>
+			</tr>
+			<% } %>
+		</tbody>
+	</table>
+	<br/>
+	<div style="text-align: center;">
+		<button name="continue">Continue</button>
+	</div>
+</div>

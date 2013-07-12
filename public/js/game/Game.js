@@ -3,16 +3,16 @@
             : function (f) {
               module.exports = exports = f(function(file) {
                 // This imitates the 'require' function for node js
-                //return require('./public/js/'+file+'.js');
                 return require('../'+file);
               });
             }}).
 define(function(require) {
   var Player = require('game/Player');
-  var Game = function(width, height, players) {
+  var Game = function(width, height, players, gameOverCallback) {
     this.width = width;
     this.height = height;
     this.players = players;
+    this.running = true;
 
     var isCollision = function(point, direction, paths) {
       if (direction === 'N')
@@ -58,6 +58,8 @@ define(function(require) {
 
     var self = this;
     this.update = function() {
+      if (!self.running)
+        return;
       var paths = []
       for (var i in self.players) {
         paths.push(self.players[i].getPath());
@@ -67,6 +69,13 @@ define(function(require) {
         var point = player.getHead();
         if (isCollision([point[0], point[1]], player.getDirection(), paths)) {
           player.deactivate();
+          var numActivePlayers = 0;
+          for (var j in self.players)
+            numActivePlayers += self.players[j].active;
+          if ((numActivePlayers == 1 || numActivePlayers == 0) && gameOverCallback) {
+            gameOverCallback();
+            self.running = false;
+          }
         }
         player.move(paths);
       }
