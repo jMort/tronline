@@ -25,9 +25,11 @@ define(function(require) {
         this.defaultAction();
     },
     defaultAction: function(action) {
-      initialized = true;
-      Backbone.history.navigate('/');
-      eventBus.trigger('showLogin');
+      if (!initialized) {
+        initialized = true;
+        Backbone.history.navigate('/');
+        eventBus.trigger('showLogin');
+      }
     }
   });
 
