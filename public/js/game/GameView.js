@@ -116,6 +116,8 @@ define(function(require) {
       this.socket.on('startCountdown', function() {
         var intervalId = setInterval(function() {
           self.$('#countdown').text(countdown);
+          self.$('#countdown').css('margin-left', -self.$('#countdown').width()/2);
+          self.$('#countdown').css('margin-top', -self.$('#countdown').height()/2);
           if (countdown > 0) {
             countdown--;
           } else {
@@ -130,10 +132,12 @@ define(function(require) {
         var millis = Math.abs(serverTime - data.timestamp);
         if (!(self.game)) {
           self.game = fastForwardGameByXMillis(Game.createNewFromObject(data.game), millis);
-          var left = WIDTH/2 - 55;
-          var top = HEIGHT/2 - 50;
           self.renderMultiplayer();
-          self.$el.append('<h1 id="countdown" class="textGlow" style="position: absolute; left: '+left+'px; top: '+top+'px;">Ready!</h1>');
+          var countdownTitle = $('<h1 id="countdown" class="textGlow" style="position: absolute; left: 50%; top: 50%;">Ready!</h1>');
+          $(countdownTitle).css('margin-left', -$(countdownTitle).width()/2 - 50);
+          $(countdownTitle).css('margin-top', -$(countdownTitle).height()/2 - 15);
+
+          self.$el.append($(countdownTitle));
         } else {
           self.game = fastForwardGameByXMillis(Game.createNewFromObject(data.game), millis);
         }
@@ -256,6 +260,14 @@ define(function(require) {
         width: width+20,
         height: height+20
       });
+
+      this.$('div#gameCanvasContainer').css('position', 'absolute');
+      this.$('div#gameCanvasContainer').css('left', '50%');
+      this.$('div#gameCanvasContainer').css('top', '50%');
+      var w = this.$('div#gameCanvasContainer').width();
+      var h = this.$('div#gameCanvasContainer').height();
+      this.$('div#gameCanvasContainer').css('margin-left', -w/2);
+      this.$('div#gameCanvasContainer').css('margin-top', -h/2);
 
       // All multiplayer games will have widths and heights that are divisible by 10
       var borderLayer = new Kinetic.Layer();
