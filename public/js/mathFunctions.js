@@ -1,3 +1,11 @@
+({ define: typeof define === 'function'
+            ? define
+            : function (f) {
+              module.exports = exports = f(function(file) {
+                // This imitates the 'require' function for node js
+                return require('../'+file);
+              });
+            }}).
 define(function(require) {
   var mathFunctions = {
     sum: function(arr) {

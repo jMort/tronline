@@ -76,6 +76,9 @@ var games = {};
 var gameSnapshots = {};
 var socketIdToSocket = {};
 var socketIdToPlayerName = {};
+var socketIdToLastSynchronizeTime = {};
+var socketIdToLatencies = {};
+var socketIdToClockOffset = {};
 
 /* Finds the first index of an object in array which contains a key-value pair */
 function indexOfKeyValuePairInArray(array, key, value) {
@@ -107,9 +110,10 @@ function addToPending(pendingGame, nickname) {
 
 var events = require('./events.js')(io,
                                     Game, Player,
-                                    players, socketIdToSocket, socketIdToPlayerName, pendingGames,
-                                    playerColorList, games, gameSnapshots,
-                                    indexOfKeyValuePairInArray, addToPending);
+                                    players, socketIdToSocket, socketIdToPlayerName,
+                                    socketIdToLastSynchronizeTime, socketIdToLatencies,
+                                    socketIdToClockOffset, pendingGames, playerColorList,
+                                    games, gameSnapshots, indexOfKeyValuePairInArray, addToPending);
 
 io.sockets.on('connection', function(socket) {
   console.log('User connected');

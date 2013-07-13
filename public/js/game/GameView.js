@@ -149,18 +149,19 @@ define(function(require) {
         // We need to use 'one' instead of 'bind' to stop it picking up a keydown event
         // multiple times and spamming the server, making the game really slow.
         $(window).one('keydown', function(e) {
+          var timestamp = new Date().getTime();
           if (e.keyCode == LEFT) {
             player.updateDirection('W');
-            self.socket.emit('changeDirection', self.hostNickname, 'W');
+            self.socket.emit('changeDirection', self.hostNickname, 'W', timestamp);
           } else if (e.keyCode == UP) {
             player.updateDirection('N');
-            self.socket.emit('changeDirection', self.hostNickname, 'N');
+            self.socket.emit('changeDirection', self.hostNickname, 'N', timestamp);
           } else if (e.keyCode == RIGHT) {
             player.updateDirection('E');
-            self.socket.emit('changeDirection', self.hostNickname, 'E');
+            self.socket.emit('changeDirection', self.hostNickname, 'E', timestamp);
           } else if (e.keyCode == DOWN) {
             player.updateDirection('S');
-            self.socket.emit('changeDirection', self.hostNickname, 'S');
+            self.socket.emit('changeDirection', self.hostNickname, 'S', timestamp);
           }
         });
       });

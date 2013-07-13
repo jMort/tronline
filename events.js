@@ -1,5 +1,6 @@
 var helper = require('./helper');
-module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdToPlayerName, pendingGames, playerColorList, games, gameSnapshots, indexOfKeyValuePairInArray, addToPending) {
+var mathFunctions = require('./public/js/mathFunctions');
+module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdToPlayerName, socketIdToLastSynchronizeTime, socketIdToLatencies, socketIdToClockOffset, pendingGames, playerColorList, games, gameSnapshots, indexOfKeyValuePairInArray, addToPending) {
   // Sends event to all players in array `playerGroup`
   var sendEventToPlayerGroup = function(playerGroup, event, data) {
     for (var i in playerGroup) {
@@ -75,8 +76,29 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         players[socketIdToPlayerName[socket.id]]._lastPingSentAt = null;
       }
     },
-    synchronizeTime: function(socket) {
-      socket.emit('currentTime', new Date().getTime());
+    synchronizeTime: function(socket, clientTime) {
+      var currentTime = new Date().getTime();
+      socket.emit('currentTime', currentTime);
+      if (socketIdToLastSynchronizeTime[socket.id] === undefined) {
+        socketIdToLastSynchronizeTime[socket.id] = currentTime;
+        socketIdToLatencies[socket.id] = [];
+      } else {
+        var totalTime = currentTime - socketIdToLastSynchronizeTime[socket.id];
+        var latency = totalTime/2;
+        if (socketIdToClockOffset[socket.id] === undefined)
+          socketIdToClockOffset[socket.id] = clientTime - currentTime + latency;
+        else
+          socketIdToLatencies[socket.id].push(latency);
+
+        if (socketIdToLatencies[socket.id].length < 9) {
+          socketIdToLastSynchronizeTime[socket.id] = currentTime;
+        } else {
+          var latencies = socketIdToLatencies[socket.id];
+          var newLatencies = mathFunctions.filterNumbersXStandardDeviationsAwayFromMedian(latencies, 1);
+          var averageLatency = parseInt(mathFunctions.average(newLatencies));
+          socketIdToClockOffset[socket.id] = clientTime - currentTime + averageLatency;
+        }
+      }
     },
     getNumPlayersOnline: function(socket) {
       socket.emit('numPlayersOnline', Object.keys(socketIdToSocket).length)
@@ -268,7 +290,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         }, 1000);
       }
     },
-    changeDirection: function(socket, hostNickname, direction) {
+    changeDirection: function(socket, hostNickname, direction, timestamp) {
       var nickname = socketIdToPlayerName[socket.id];
       var playersInGame = games[hostNickname].getPlayers();
       var playerIsInGame = false;
@@ -283,7 +305,9 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
       if (playerIsInGame) {
         // Calculate the average ping across the past 5 seconds of data
         // This is the one-way trip
-        var ping = helper.calculateAveragePing(players[nickname]._pings);
+        //var ping = helper.calculateAveragePing(players[nickname]._pings);
+        var clientTime = new Date().getTime() + socketIdToClockOffset[socket.id];
+        var ping = Math.abs(clientTime - timestamp);
 
         // We need to look at the closest snapshot to the time the player actually made the move
         var currentTime = new Date().getTime();

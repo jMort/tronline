@@ -69,8 +69,8 @@ define(function(require) {
 
         // Wait a short time (1 second) to ensure it is connected
         setTimeout(function() {
-          self.socket.emit('synchronizeTime');
           lastSynchronizeTime = new Date().getTime();
+          self.socket.emit('synchronizeTime', lastSynchronizeTime);
           // This is just temporary. A progress bar will be implemented later
           self.$el.append('<div class="numPlayersOnline"><p>Synchronizing with server...</p></div>');
         }, 1000);
@@ -85,8 +85,8 @@ define(function(require) {
           latencies.push(latency);
 
         if (latencies.length < 10) {
-          self.socket.emit('synchronizeTime');
           lastSynchronizeTime = new Date().getTime();
+          self.socket.emit('synchronizeTime', lastSynchronizeTime);
         } else {
           var newLatencies = mathFunctions.filterNumbersXStandardDeviationsAwayFromMedian(latencies, 1);
           var averageLatency = parseInt(mathFunctions.average(newLatencies));
