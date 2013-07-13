@@ -320,6 +320,7 @@ define(function(require) {
       if (this.$('.gameOverView').length == 0) {
         this.$el.append('<div class="gameOverView"></div>');
         var gameOverView = new GameOverView({ el: this.$('.gameOverView'), results: results });
+        this.gameOverView = gameOverView;
       }
     },
     teardown: function() {

@@ -39,7 +39,7 @@ define(function(require) {
       });
 
       window.onbeforeunload = function(){
-        if (self.gameView)
+        if (self.gameView && !self.gameView.gameOverView)
           return 'All progress will be lost if you refresh the page.';
       }
     },
