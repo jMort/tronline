@@ -130,6 +130,7 @@ define(function(require) {
         if (self.multiplayerSetupView) {
           normal = false;
           self.multiplayerSetupView.$el.slideLeft(500, function() {
+            self.multiplayerSetupView.teardown();
             self.multiplayerSetupView.destroy();
             delete self.multiplayerSetupView;
             if (!(self.gameView))
@@ -171,6 +172,7 @@ define(function(require) {
       });
       eventBus.on('playMultiplayer', function(hostNickname) {
         self.multiplayerSetupView.$el.slideLeft(500, function() {
+          self.multiplayerSetupView.teardown();
           self.multiplayerSetupView.destroy();
           self.sidebarView.destroy();
           self.chatView.destroy();

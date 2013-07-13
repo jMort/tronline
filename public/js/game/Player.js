@@ -89,6 +89,9 @@ define(function(require) {
     };
 
     this.updateDirection = function(direction) {
+      if (!self.active)
+        return false;
+      
       if (direction === self.direction) {
         return false;
       } else if (self.path.length > 1) {

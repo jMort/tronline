@@ -8,11 +8,12 @@
             }}).
 define(function(require) {
   var Player = require('game/Player');
-  var Game = function(width, height, players, gameOverCallback) {
+  var Game = function(width, height, players, callback) {
     this.width = width;
     this.height = height;
     this.players = players;
     this.running = true;
+    var gameOverCallback = callback;
 
     var isCollision = function(point, direction, paths) {
       if (direction === 'N')
@@ -73,6 +74,8 @@ define(function(require) {
           for (var j in self.players)
             numActivePlayers += self.players[j].active;
           if ((numActivePlayers == 1 || numActivePlayers == 0) && gameOverCallback) {
+            for (var j in self.players)
+              self.players[j].active = false;
             gameOverCallback();
             self.running = false;
           }
@@ -83,6 +86,28 @@ define(function(require) {
 
     this.getPlayers = function() {
       return self.players;
+    };
+
+    this.setGameOverCallback = function(callback) {
+      gameOverCallback = callback;
+    };
+
+    this.results = function() {
+      var results = [];
+      for (var i in self.players) {
+        results.push({ nickname: self.players[i].nickname, score: self.players[i].calculateLength(),
+                       alive: self.players[i].active });
+      }
+      results.sort(function(a, b) {
+        if ((a.alive && b.alive) || (!a.alive && !b.alive))
+          return b.score > a.score;
+        else if (a.alive && !b.alive)
+          return false;
+        else
+          return true;
+      });
+
+      return results;
     };
   };
 

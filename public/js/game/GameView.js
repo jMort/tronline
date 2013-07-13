@@ -46,7 +46,7 @@ define(function(require) {
       this.players = [player, aiPlayer];
       var self = this;
       this.game = new Game(this.renderedWidth, this.renderedHeight, this.players, function() {
-        self.displayGameOver();
+        self.displayGameOver(self.game.results());
       });
       $(window).bind('keydown', function(e) {
         if (e.keyCode == LEFT)
@@ -65,7 +65,7 @@ define(function(require) {
       this.players = [player1, player2];
       var self = this;
       this.game = new Game(this.renderedWidth, this.renderedHeight, this.players, function() {
-        self.displayGameOver();
+        self.displayGameOver(self.game.results());
       });
       $(window).bind('keydown', function(e) {
         if (e.keyCode == LEFT)
@@ -163,6 +163,15 @@ define(function(require) {
             self.socket.emit('changeDirection', self.hostNickname, 'S', timestamp);
           }
         });
+      });
+      this.socket.on('gameOver', function(results) {
+        // Wait one frame before deactivating players so the flashing animation can happen
+        setTimeout(function() {
+          var players = self.game.getPlayers();
+          for (var i in players)
+            players[i].active = false;
+        }, 1000/30);
+        self.displayGameOver(results);
       });
     },
     translatePoints: function(points) {
@@ -306,21 +315,7 @@ define(function(require) {
       }, 1000/30);
       this.intervalId = intervalId;
     },
-    displayGameOver: function() {
-      var results = [];
-      var players = this.game.getPlayers();
-      for (var i in players) {
-        results.push({ nickname: players[i].nickname, score: players[i].calculateLength(),
-                       alive: players[i].active });
-      }
-      results.sort(function(a, b) {
-        if ((a.alive && b.alive) || (!a.alive && !b.alive))
-          return b.score > a.score;
-        else if (a.alive && !b.alive)
-          return false;
-        else
-          return true;
-      });
+    displayGameOver: function(results) {
       // If the gameOverView doesn't already exist
       if (this.$('.gameOverView').length == 0) {
         this.$el.append('<div class="gameOverView"></div>');

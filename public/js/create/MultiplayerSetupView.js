@@ -7,6 +7,7 @@ define(function(require) {
       template   = require('text!create/multiplayerSetup.html'),
       playerTmpl = require('text!create/player.html');
 
+  var self;
   var MultiplayerSetupView = Backbone.View.extend({
     events: {
       'change td#difficulty select': 'changeDifficulty',
@@ -14,6 +15,7 @@ define(function(require) {
       'click button[name="createGame"]': 'clickStart'
     },
     initialize: function(options) {
+      self = this;
       this.socket = options.socket;
       this.hostNickname = options.hostNickname;
       this.isHost = options.isHost;
@@ -22,47 +24,10 @@ define(function(require) {
         this.socket.emit('createMultiplayer');
       else
         this.socket.emit('getPlayersInGameUpdate', this.hostNickname);
-      var self = this;
-      this.socket.on('playersInGameUpdate', function(players) {
-        self.difficulty = players.difficulty;
-        if (!self.isHost)
-          self.$('td#difficulty span').text(self.difficulty);
-        self.$('#numPlayersInGame').html((players.accepted.length+1) + '/16');
-        
-        // Create Player object of host
-        players.host = Player.createNewFromObject(players.host);
 
-        var host = $(_.template(playerTmpl)({ name: players.host.nickname,
-                                              color: players.host.getColor() })).addClass('textGlow');
-        self.$('#playersInGameList').html(host);
-        for (var i in players.accepted) {
-          // Create Player object of player
-          players.accepted[i] = Player.createNewFromObject(players.accepted[i]);
-          var player = $(_.template(playerTmpl)({ name: players.accepted[i].nickname,
-                                                  color: players.accepted[i].getColor() })).addClass('textGlowGreen');
-          self.$('#playersInGameList').append(player);
-        }
-        for (var i in players.pending) {
-          // We don't need to create a Player object of player here as we only do it accepted ones
-          var player = $(_.template(playerTmpl)({ name: players.pending[i].nickname,
-                                                  color: '' })).addClass('textGlowOrange');
-          self.$('#playersInGameList').append(player);
-        }
-        for (var i in players.declined) {
-          // We don't need to create a Player object of player here as we only do it accepted ones
-          var player = $(_.template(playerTmpl)({ name: players.declined[i].nickname,
-                                                  color: '' })).addClass('textGlowRed');
-          self.$('#playersInGameList').append(player);
-        }
-      });
-      this.socket.on('gameCancelled', function(hostNickname) {
-        Backbone.history.navigate('/home', { replace: true });
-        eventBus.trigger('showLobby');
-      });
-      this.socket.on('gameStarting', function() {
-        Backbone.history.navigate('/home/play/multiplayer', { replace: true });
-        eventBus.trigger('playMultiplayer', self.hostNickname);
-      });
+      this.socket.on('playersInGameUpdate', this.onPlayersInGameUpdate);
+      this.socket.on('gameCancelled', this.onGameCancelled);
+      this.socket.on('gameStarting', this.onGameStarting);
       this.render();
     },
     render: function() {
@@ -85,6 +50,51 @@ define(function(require) {
     },
     clickStart: function() {
       this.socket.emit('startGame');
+    },
+    onPlayersInGameUpdate: function(players) {
+      self.difficulty = players.difficulty;
+      if (!self.isHost)
+        self.$('td#difficulty span').text(self.difficulty);
+      self.$('#numPlayersInGame').html((players.accepted.length+1) + '/16');
+      
+      // Create Player object of host
+      players.host = Player.createNewFromObject(players.host);
+
+      var host = $(_.template(playerTmpl)({ name: players.host.nickname,
+                                            color: players.host.getColor() })).addClass('textGlow');
+      self.$('#playersInGameList').html(host);
+      for (var i in players.accepted) {
+        // Create Player object of player
+        players.accepted[i] = Player.createNewFromObject(players.accepted[i]);
+        var player = $(_.template(playerTmpl)({ name: players.accepted[i].nickname,
+                                                color: players.accepted[i].getColor() })).addClass('textGlowGreen');
+        self.$('#playersInGameList').append(player);
+      }
+      for (var i in players.pending) {
+        // We don't need to create a Player object of player here as we only do it accepted ones
+        var player = $(_.template(playerTmpl)({ name: players.pending[i].nickname,
+                                                color: '' })).addClass('textGlowOrange');
+        self.$('#playersInGameList').append(player);
+      }
+      for (var i in players.declined) {
+        // We don't need to create a Player object of player here as we only do it accepted ones
+        var player = $(_.template(playerTmpl)({ name: players.declined[i].nickname,
+                                                color: '' })).addClass('textGlowRed');
+        self.$('#playersInGameList').append(player);
+      }
+    },
+    onGameCancelled: function(hostNickname) {
+      Backbone.history.navigate('/home', { replace: true });
+      eventBus.trigger('showLobby');
+    },
+    onGameStarting: function() {
+      Backbone.history.navigate('/home/play/multiplayer', { replace: true });
+      eventBus.trigger('playMultiplayer', self.hostNickname);
+    },
+    teardown: function() {
+      this.socket.removeListener('playersInGameUpdate', this.onPlayersInGameUpdate);
+      this.socket.removeListener('gameCancelled', this.onGameCancelled);
+      this.socket.removeListener('gameStarting', this.onGameStarting);
     }
   });
 

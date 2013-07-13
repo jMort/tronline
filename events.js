@@ -126,6 +126,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
     },
     createMultiplayer: function(socket) {
       var fromNickname = socketIdToPlayerName[socket.id];
+      players[fromNickname].setColor('');
       if (!(fromNickname in pendingGames))
         pendingGames[fromNickname] = { host: players[fromNickname], difficulty: 'Easy',
                                        accepted: [], pending: [], declined: [] };
@@ -280,9 +281,22 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
           //       function is being used client-side, and the way it works is that it
           //       initially waits the interval time (making it wait an extra second).
           setTimeout(function() {
+            delete pendingGames[nickname];
             var intervalId = setInterval(function() {
               game.update();
             }, 1000/30);
+            game.setGameOverCallback(function() {
+              clearInterval(intervalId);
+              var group = game.getPlayers();
+              sendEventToPlayerGroup(group, 'gameOver', game.results());
+              for (var i in group) {
+                group[i].setColor('');
+                group[i].active = true;
+                group[i].nextDirection = null;
+              }
+              delete games[nickname];
+              delete gameSnapshots[nickname];
+            });
             var broadcastIntervalId = setInterval(function() {
               broadcastGameState(nickname, broadcastIntervalId);
             }, 500);
@@ -291,50 +305,52 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
       }
     },
     changeDirection: function(socket, hostNickname, direction, timestamp) {
-      var nickname = socketIdToPlayerName[socket.id];
-      var playersInGame = games[hostNickname].getPlayers();
-      var playerIsInGame = false;
-      var playerIndex = -1;
-      for (var i in playersInGame) {
-        if (playersInGame[i].nickname === nickname) {
-          playerIsInGame = true;
-          playerIndex = i;
-          break;
+      if (hostNickname in games) {
+        var nickname = socketIdToPlayerName[socket.id];
+        var playersInGame = games[hostNickname].getPlayers();
+        var playerIsInGame = false;
+        var playerIndex = -1;
+        for (var i in playersInGame) {
+          if (playersInGame[i].nickname === nickname) {
+            playerIsInGame = true;
+            playerIndex = i;
+            break;
+          }
         }
-      }
-      if (playerIsInGame) {
-        /*var clientTime = new Date().getTime() + socketIdToClockOffset[socket.id];
-        var ping = Math.abs(clientTime - timestamp);
+        if (playerIsInGame) {
+          /*var clientTime = new Date().getTime() + socketIdToClockOffset[socket.id];
+          var ping = Math.abs(clientTime - timestamp);
 
-        // We need to look at the closest snapshot to the time the player actually made the move
-        var currentTime = new Date().getTime();
-        var gameState = helper.determineGameStateXMillisAgo(gameSnapshots[hostNickname], ping, currentTime);
-        var timestamp = gameState.timestamp;
-        var game = gameState.game;
-        var newPlayer = Player.clone(game.players[playerIndex]);
+          // We need to look at the closest snapshot to the time the player actually made the move
+          var currentTime = new Date().getTime();
+          var gameState = helper.determineGameStateXMillisAgo(gameSnapshots[hostNickname], ping, currentTime);
+          var timestamp = gameState.timestamp;
+          var game = gameState.game;
+          var newPlayer = Player.clone(game.players[playerIndex]);
 
-        // Now make the move. NOTE: The direction is validated in the Player class
-        newPlayer.updateDirection(direction);
+          // Now make the move. NOTE: The direction is validated in the Player class
+          newPlayer.updateDirection(direction);
 
-        // Update all game snapshots after the move
-        var tempPlayer = Player.clone(newPlayer);
-        for (var i = 0; i < ping; i += parseInt(1000/30)) {
-          tempPlayer = fastForwardPlayerByXMillis(tempPlayer, i);
-          if (timestamp+i in gameSnapshots[hostNickname])
-            gameSnapshots[hostNickname][timestamp+i].players[playerIndex] = tempPlayer;
+          // Update all game snapshots after the move
+          var tempPlayer = Player.clone(newPlayer);
+          for (var i = 0; i < ping; i += parseInt(1000/30)) {
+            tempPlayer = fastForwardPlayerByXMillis(tempPlayer, i);
+            if (timestamp+i in gameSnapshots[hostNickname])
+              gameSnapshots[hostNickname][timestamp+i].players[playerIndex] = tempPlayer;
+          }
+
+          // Simulate player forward in time by its ping
+          newPlayer = fastForwardPlayerByXMillis(newPlayer, ping);
+
+          // Replace player with new up-to-date player
+          games[hostNickname].players[playerIndex] = newPlayer;
+          players[nickname] = newPlayer;*/
+
+          games[hostNickname].players[playerIndex].updateDirection(direction);
+          players[nickname] = games[hostNickname].players[playerIndex];
+
+          broadcastGameState(hostNickname);
         }
-
-        // Simulate player forward in time by its ping
-        newPlayer = fastForwardPlayerByXMillis(newPlayer, ping);
-
-        // Replace player with new up-to-date player
-        games[hostNickname].players[playerIndex] = newPlayer;
-        players[nickname] = newPlayer;*/
-
-        games[hostNickname].players[playerIndex].updateDirection(direction);
-        players[nickname] = games[hostNickname].players[playerIndex];
-
-        broadcastGameState(hostNickname);
       }
     },
     disconnect: function(socket) {
