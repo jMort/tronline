@@ -56,43 +56,8 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
 
   var broadcastGameState = function(hostNickname, intervalId) {
     if (hostNickname in games) {
-      // Sort the pings of every player
-      var pingToPlayerNames = {};
-      var playersInGame = games[hostNickname].getPlayers()
-      for (var i in playersInGame) {
-        var sum = 0;
-        for (var j in playersInGame[i]._pings)
-          sum += playersInGame[i]._pings[j];
-        var ping = parseInt((sum/players[playersInGame[i].nickname]._pings.length)/2);
-        if (ping in pingToPlayerNames)
-          pingToPlayerNames[ping].push(playersInGame[i].nickname);
-        else
-          pingToPlayerNames[ping] = [playersInGame[i].nickname];
-      }
-      var sortedPings = Object.keys(pingToPlayerNames).sort(function(a, b) {
-        return (parseInt(b) - parseInt(a)) >= 0;
-      });
-
-      // Simulate the whole game forward based on each player's ping
-      // so that when the game state arrives it is in sync with the server.
-      var i = 0;
-      var each = function() {
-        var ping = sortedPings[i];
-        for (var j in pingToPlayerNames[ping]) {
-          var nickname = pingToPlayerNames[ping][j];
-          for (var k in socketIdToPlayerName) {
-            if (socketIdToPlayerName[k] === nickname) {
-              socketIdToSocket[k].emit('gameUpdate', fastForwardGameByXMillis(games[hostNickname], ping));
-              break;
-            }
-          }
-        }
-        i++;
-        if (i < sortedPings.length) {
-          setTimeout(each, ping-sortedPings[i]);
-        }
-      };
-      setTimeout(each, 0);
+      var data = { timestamp: new Date().getTime(), game: games[hostNickname] };
+      sendEventToPlayerGroup(games[hostNickname].getPlayers(), 'gameUpdate', data);
     } else {
       if (intervalId)
         clearInterval(intervalId);
@@ -261,7 +226,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
           }
           var game = new Game(800, 600, gamePlayers);
           games[nickname] = game;
-          sendEventToPlayerGroup(group, 'gameUpdate', game);
+          broadcastGameState(nickname);
 
           // Remove game from pendingGames
           delete pendingGames[nickname];

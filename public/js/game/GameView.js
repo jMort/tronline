@@ -32,6 +32,7 @@ define(function(require) {
       } else if (options.multiplayer) {
         this.socket = options.socket;
         this.hostNickname = options.hostNickname;
+        this.clockDiff = options.clockDiff;
         this.multiplayerInit();
       } else {
         this.singlePlayerInit();
@@ -86,6 +87,29 @@ define(function(require) {
       });
     },
     multiplayerInit: function() {
+      // Fast forwards a player ahead by X milliseconds and returns the new player
+      var fastForwardPlayerByXMillis = function(player, millis) {
+        var newPlayer = Player.clone(player);
+        var frames = parseInt(millis/(1000/30));
+        for (var i = 0; i < frames; i++)
+          newPlayer.move();
+
+        return newPlayer;
+      };
+
+      // Fast forwards a whole game ahead by X milliseconds and returns the new game
+      var fastForwardGameByXMillis = function(game, millis) {
+        var players = game.getPlayers();
+        var newPlayers = [];
+        for (var i in players) {
+          newPlayers.push(fastForwardPlayerByXMillis(players[i], millis));
+        }
+        var newGame = Game.clone(game);
+        newGame.players = newPlayers;
+
+        return newGame;
+      };
+
       this.gameStarted = false;
       var countdown = 3;
       var self = this;
@@ -101,15 +125,18 @@ define(function(require) {
           }
         }, 1000);
       });
-      this.socket.on('gameUpdate', function(game) {
+      this.socket.on('gameUpdate', function(data) {
+        var serverTime = new Date().getTime() + self.clockDiff;
+        var millis = Math.abs(serverTime - data.timestamp);
+        console.log(data);
         if (!(self.game)) {
-          self.game = Game.createNewFromObject(game);
+          self.game = fastForwardGameByXMillis(Game.createNewFromObject(data.game), millis);
           var left = WIDTH/2 - 55;
           var top = HEIGHT/2 - 50;
           self.renderMultiplayer();
           self.$el.append('<h1 id="countdown" class="textGlow" style="position: absolute; left: '+left+'px; top: '+top+'px;">Ready!</h1>');
         } else {
-          self.game = Game.createNewFromObject(game);
+          self.game = fastForwardGameByXMillis(Game.createNewFromObject(data.game), millis);
         }
         var players = self.game.getPlayers();
         for (var i in players) {

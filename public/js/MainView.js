@@ -173,7 +173,7 @@ define(function(require) {
           self.multiplayerSetupView.destroy();
           self.sidebarView.destroy();
           self.chatView.destroy();
-          self.showMultiplayer(hostNickname);
+          self.showMultiplayer(hostNickname, currentClockDiff);
         });
       });
       eventBus.on('createMultiplayer', function() {
@@ -245,11 +245,12 @@ define(function(require) {
                                     nickname: this.nickname });
       this.gameView = gameView;
     },
-    showMultiplayer: function(hostNickname) {
+    showMultiplayer: function(hostNickname, currentClockDiff) {
       this.$el.html('');
       this.$el.append('<div class="gameView"></div>');
       var gameView = new GameView({ el: this.$('.gameView'), multiplayer: true, socket: this.socket,
-                                    hostNickname: hostNickname, nickname: this.nickname });
+                                    hostNickname: hostNickname, nickname: this.nickname,
+                                    clockDiff: currentClockDiff });
       this.gameView = gameView;
     },
     showMultiplayerSetup: function(options) {
