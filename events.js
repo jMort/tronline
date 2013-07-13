@@ -101,7 +101,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
 
   return {
     pingIn: function(socket) {
-      if (players[socketIdToPlayerName[socket.id]]._pings.length == 5)
+      if (players[socketIdToPlayerName[socket.id]]._pings.length == 20)
         players[socketIdToPlayerName[socket.id]]._pings.splice(0, 1);
       var lastPingSentAt = players[socketIdToPlayerName[socket.id]]._lastPingSentAt;
       if (lastPingSentAt !== null) {
