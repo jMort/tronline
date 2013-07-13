@@ -129,7 +129,7 @@ io.sockets.on('connection', function(socket) {
   };
   // Ping the user first as setInterval waits the interval time first before calling ping
   ping();
-  pingIntervalId = setInterval(ping, 300);
+  pingIntervalId = setInterval(ping, 500);
 
   // This is to emulate a for loop.
   // This is done due to asynchronous issues which resulted in the for loop always taking
