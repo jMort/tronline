@@ -161,4 +161,4 @@ var snapshotIntervalId = setInterval(function() {
         delete gameSnapshots[hostNickname][time];
     }
   }
-}, 50);
+}, 1000/30);

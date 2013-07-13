@@ -1,3 +1,4 @@
+var helper = require('./helper');
 module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdToPlayerName, pendingGames, playerColorList, games, gameSnapshots, indexOfKeyValuePairInArray, addToPending) {
   // Sends event to all players in array `playerGroup`
   var sendEventToPlayerGroup = function(playerGroup, event, data) {
@@ -28,30 +29,6 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
       positions[i].y = newPosition[1];
     }
     return positions;
-  };
-
-  // Calculates the average ping divided by 2 (one-way trip)
-  var calculateAveragePing = function(pingsArray) {
-    var sum = 0;
-    for (var i in pingsArray) {
-      sum += parseInt(pingsArray[i]);
-    }
-    return (sum/pingsArray.length)/2;
-  };
-
-  // Determines the game state X milliseconds ago
-  var determineGameStateXMillisAgo = function(gameHostNickname, millis) {
-    var currentTime = new Date().getTime();
-    var targetTime = currentTime - millis;
-    var game = null;
-    var timestamp = null;
-    for (var t in gameSnapshots[gameHostNickname]) {
-      if (timestamp == null || Math.abs(targetTime - t) < Math.abs(targetTime - timestamp)) {
-        game = gameSnapshots[gameHostNickname][t];
-        timestamp = t;
-      }
-    }
-    return Game.clone(game);
   };
 
   // Fast forwards a player ahead by X milliseconds and returns the new player
@@ -332,10 +309,11 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
       if (playerIsInGame) {
         // Calculate the average ping across the past 5 seconds of data
         // This is the one-way trip
-        var ping = calculateAveragePing(players[nickname]._pings);
+        var ping = helper.calculateAveragePing(players[nickname]._pings);
 
         // We need to look at the closest snapshot to the time the player actually made the move
-        var game = determineGameStateXMillisAgo(hostNickname, ping);
+        var currentTime = new Date().getTime();
+        var game = helper.determineGameStateXMillisAgo(gameSnapshots[hostNickname], ping, currentTime);
         var newPlayer = game.getPlayers()[playerIndex];
 
         // Now make the move. NOTE: The direction is validated in the Player class
