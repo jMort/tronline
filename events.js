@@ -303,7 +303,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         }
       }
       if (playerIsInGame) {
-        var clientTime = new Date().getTime() + socketIdToClockOffset[socket.id];
+        /*var clientTime = new Date().getTime() + socketIdToClockOffset[socket.id];
         var ping = Math.abs(clientTime - timestamp);
 
         // We need to look at the closest snapshot to the time the player actually made the move
@@ -329,7 +329,10 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
 
         // Replace player with new up-to-date player
         games[hostNickname].players[playerIndex] = newPlayer;
-        players[nickname] = newPlayer;
+        players[nickname] = newPlayer;*/
+
+        games[hostNickname].players[playerIndex].updateDirection(direction);
+        players[nickname] = games[hostNickname].players[playerIndex];
 
         broadcastGameState(hostNickname);
       }
