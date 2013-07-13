@@ -27,13 +27,13 @@ exports.testDetermineGameStateXMillisAgo = function(test) {
     30: new Game(100, 100, [new Player('correct1', 5, 5, 5, 'E', '')])
   };
 
-  var game = determineGameStateXMillisAgo(snapshots1, 7, 31);
+  var game = determineGameStateXMillisAgo(snapshots1, 7, 31).game;
   test.equal(game.getPlayers()[0].nickname, 'correct1');
 
-  game = determineGameStateXMillisAgo(snapshots1, 11, 31);
+  game = determineGameStateXMillisAgo(snapshots1, 11, 31).game;
   test.equal(game.getPlayers()[0].nickname, 'correct2');
 
-  game = determineGameStateXMillisAgo(snapshots1, 21, 31);
+  game = determineGameStateXMillisAgo(snapshots1, 21, 31).game;
   test.equal(game.getPlayers()[0].nickname, 'correct2');
 
   var snapshots2 = {
@@ -44,13 +44,13 @@ exports.testDetermineGameStateXMillisAgo = function(test) {
     7000: new Game(100, 100, [new Player('correct3', 5, 5, 5, 'E', '')])
   };
 
-  game = determineGameStateXMillisAgo(snapshots2, 6000, 7000);
+  game = determineGameStateXMillisAgo(snapshots2, 6000, 7000).game;
   test.equal(game.getPlayers()[0].nickname, 'correct1');
 
-  game = determineGameStateXMillisAgo(snapshots2, 251, 7000);
+  game = determineGameStateXMillisAgo(snapshots2, 251, 7000).game;
   test.equal(game.getPlayers()[0].nickname, 'correct2');
 
-  game = determineGameStateXMillisAgo(snapshots2, 249, 7000);
+  game = determineGameStateXMillisAgo(snapshots2, 249, 7000).game;
   test.equal(game.getPlayers()[0].nickname, 'correct3');
   test.done();
 };

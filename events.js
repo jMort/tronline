@@ -303,19 +303,26 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         }
       }
       if (playerIsInGame) {
-        // Calculate the average ping across the past 5 seconds of data
-        // This is the one-way trip
-        //var ping = helper.calculateAveragePing(players[nickname]._pings);
         var clientTime = new Date().getTime() + socketIdToClockOffset[socket.id];
         var ping = Math.abs(clientTime - timestamp);
 
         // We need to look at the closest snapshot to the time the player actually made the move
         var currentTime = new Date().getTime();
-        var game = helper.determineGameStateXMillisAgo(gameSnapshots[hostNickname], ping, currentTime);
-        var newPlayer = game.getPlayers()[playerIndex];
+        var gameState = helper.determineGameStateXMillisAgo(gameSnapshots[hostNickname], ping, currentTime);
+        var timestamp = gameState.timestamp;
+        var game = gameState.game;
+        var newPlayer = Player.clone(game.players[playerIndex]);
 
         // Now make the move. NOTE: The direction is validated in the Player class
         newPlayer.updateDirection(direction);
+
+        // Update all game snapshots after the move
+        var tempPlayer = Player.clone(newPlayer);
+        for (var i = 0; i < ping; i += parseInt(1000/30)) {
+          tempPlayer = fastForwardPlayerByXMillis(tempPlayer, i);
+          if (timestamp+i in gameSnapshots[hostNickname])
+            gameSnapshots[hostNickname][timestamp+i].players[playerIndex] = tempPlayer;
+        }
 
         // Simulate player forward in time by its ping
         newPlayer = fastForwardPlayerByXMillis(newPlayer, ping);

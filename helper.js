@@ -20,5 +20,5 @@ exports.determineGameStateXMillisAgo = function(snapshots, millis, currentTime) 
       timestamp = t;
     }
   }
-  return Game.clone(game);
+  return { timestamp: timestamp, game: Game.clone(game) };
 };
