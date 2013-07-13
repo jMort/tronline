@@ -21,6 +21,7 @@ define(function(require) {
         if (self.$('div.numPlayersOnline').length)
           self.updateNumPlayersOnline(numPlayers);
       });
+      this.socket.emit('getNumPlayersOnline');
       this.render();
     },
     render: function() {

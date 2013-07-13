@@ -113,6 +113,9 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
     synchronizeTime: function(socket) {
       socket.emit('currentTime', new Date().getTime());
     },
+    getNumPlayersOnline: function(socket) {
+      socket.emit('numPlayersOnline', Object.keys(socketIdToSocket).length)
+    },
     checkLogin: function(socket, nickname) {
       if (players[nickname]) {
         socket.emit('loginUnsuccessful');
