@@ -91,6 +91,7 @@ define(function(require) {
           var newLatencies = mathFunctions.filterNumbersXStandardDeviationsAwayFromMedian(latencies, 1);
           var averageLatency = parseInt(mathFunctions.average(newLatencies));
           currentClockDiff = serverTime - currentTime + averageLatency;
+          console.log(currentClockDiff);
           self.$('div.numPlayersOnline').remove();
           self.showLogin();
         }

@@ -128,7 +128,6 @@ define(function(require) {
       this.socket.on('gameUpdate', function(data) {
         var serverTime = new Date().getTime() + self.clockDiff;
         var millis = Math.abs(serverTime - data.timestamp);
-        console.log(data);
         if (!(self.game)) {
           self.game = fastForwardGameByXMillis(Game.createNewFromObject(data.game), millis);
           var left = WIDTH/2 - 55;
