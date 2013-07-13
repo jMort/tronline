@@ -71,13 +71,14 @@ define(function(require) {
         setTimeout(function() {
           self.socket.emit('synchronizeTime');
           lastSynchronizeTime = new Date().getTime();
+          // This is just temporary. A progress bar will be implemented later
+          self.$el.append('<div class="numPlayersOnline"><p>Synchronizing with server...</p></div>');
         }, 1000);
       });
       this.socket.on('currentTime', function(serverTime) {
         var currentTime = new Date().getTime();
         var totalTime = currentTime - lastSynchronizeTime;
         var latency = totalTime/2;
-        console.log(latency);
         if (currentClockDiff == null)
           currentClockDiff = serverTime - currentTime + latency;
         else
@@ -90,7 +91,8 @@ define(function(require) {
           var newLatencies = mathFunctions.filterNumbersXStandardDeviationsAwayFromMedian(latencies, 1);
           var averageLatency = parseInt(mathFunctions.average(newLatencies));
           currentClockDiff = serverTime - currentTime + averageLatency;
-          console.log(currentClockDiff);
+          self.$('div.numPlayersOnline').remove();
+          self.showLogin();
         }
       });
       this.socket.on('reconnect', function() {
@@ -205,7 +207,6 @@ define(function(require) {
     render: function() {
       this.$el = $('.mainView');
       this.appendTitle();
-      this.showLogin();
     },
     appendTitle: function() {
       this.$el.append('<h1>Tronline</h1>');
