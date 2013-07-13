@@ -77,6 +77,7 @@ define(function(require) {
         var currentTime = new Date().getTime();
         var totalTime = currentTime - lastSynchronizeTime;
         var latency = totalTime/2;
+        console.log(latency);
         if (currentClockDiff == null)
           currentClockDiff = serverTime - currentTime + latency;
         else
