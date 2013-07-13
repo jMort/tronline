@@ -110,6 +110,9 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         players[socketIdToPlayerName[socket.id]]._lastPingSentAt = null;
       }
     },
+    synchronizeTime: function(socket) {
+      socket.emit('currentTime', new Date().getTime());
+    },
     checkLogin: function(socket, nickname) {
       if (players[nickname]) {
         socket.emit('loginUnsuccessful');

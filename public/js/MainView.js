@@ -3,6 +3,7 @@ define(function(require) {
       _                    = require('underscore'),
       Backbone             = require('backbone'),
       eventBus             = require('eventBus'),
+      mathFunctions        = require('mathFunctions'),
       login                = require('login/loginLogic'),
       LoginView            = require('login/LoginView'),
       HomeView             = require('home/HomeView'),
@@ -56,11 +57,38 @@ define(function(require) {
           console.log(window.location.href);
         });
       };
+      var lastSynchronizeTime = null;
+      var currentClockDiff = null;
+      var latencies = [];
       this.socket.on('connect', function() {
         if (self.nickname) {
           console.log('Socket reconnected');
         } else {
           console.log('Socket connected');
+        }
+
+        // Wait a short time (1 second) to ensure it is connected
+        setTimeout(function() {
+          self.socket.emit('synchronizeTime');
+          lastSynchronizeTime = new Date().getTime();
+        }, 1000);
+      });
+      this.socket.on('currentTime', function(serverTime) {
+        var currentTime = new Date().getTime();
+        var totalTime = currentTime - lastSynchronizeTime;
+        var latency = totalTime/2;
+        if (currentClockDiff == null)
+          currentClockDiff = serverTime - currentTime + latency;
+        else
+          latencies.push(latency);
+
+        if (latencies.length < 10) {
+          self.socket.emit('synchronizeTime');
+        } else {
+          var newLatencies = mathFunctions.filterNumbersXStandardDeviationsAwayFromMedian(latencies, 1);
+          var averageLatency = parseInt(mathFunctions.average(newLatencies));
+          currentClockDiff = serverTime - currentTime + averageLatency;
+          console.log(currentClockDiff);
         }
       });
       this.socket.on('reconnect', function() {
