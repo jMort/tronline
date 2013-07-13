@@ -116,6 +116,21 @@ io.sockets.on('connection', function(socket) {
   socketIdToSocket[socket.id] = socket;
   io.sockets.emit('numPlayersOnline', Object.keys(socketIdToSocket).length);
 
+  var pingIntervalId = null;
+  var ping = function() {
+    if (socket.id in socketIdToPlayerName) {
+      // lastPingSentAt is set to null every time a pingIn event is received
+      // Only send out a new ping once the last one is received
+      if (players[socketIdToPlayerName[socket.id]]._lastPingSentAt == null) {
+        players[socketIdToPlayerName[socket.id]]._lastPingSentAt = new Date().getTime();
+        socket.emit('pingOut');
+      }
+    }
+  };
+  // Ping the user first as setInterval waits the interval time first before calling ping
+  ping();
+  pingIntervalId = setInterval(ping, 300);
+
   // This is to emulate a for loop.
   // This is done due to asynchronous issues which resulted in the for loop always taking
   // the value of the last item looped through.
@@ -136,15 +151,6 @@ io.sockets.on('connection', function(socket) {
   };
   setTimeout(each, 1);
 });
-
-var pingIntervalId = setInterval(function() {
-  for (var i in socketIdToSocket) {
-    if (i in socketIdToPlayerName) {
-      players[socketIdToPlayerName[i]]._lastPingSentAt = new Date().getTime();
-      socketIdToSocket[i].emit('pingOut');
-    }
-  }
-}, 1000);
 
 var snapshotIntervalId = setInterval(function() {
   var currentTime = new Date().getTime();

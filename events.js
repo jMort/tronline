@@ -104,8 +104,11 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
       if (players[socketIdToPlayerName[socket.id]]._pings.length == 5)
         players[socketIdToPlayerName[socket.id]]._pings.splice(0, 1);
       var lastPingSentAt = players[socketIdToPlayerName[socket.id]]._lastPingSentAt;
-      if (lastPingSentAt !== null)
+      if (lastPingSentAt !== null) {
         players[socketIdToPlayerName[socket.id]]._pings.push(new Date().getTime() - lastPingSentAt);
+        // Reset lastPingSentAt time to null
+        players[socketIdToPlayerName[socket.id]]._lastPingSentAt = null;
+      }
     },
     checkLogin: function(socket, nickname) {
       if (players[nickname]) {
