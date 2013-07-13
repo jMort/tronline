@@ -85,6 +85,7 @@ define(function(require) {
 
         if (latencies.length < 10) {
           self.socket.emit('synchronizeTime');
+          lastSynchronizeTime = new Date().getTime();
         } else {
           var newLatencies = mathFunctions.filterNumbersXStandardDeviationsAwayFromMedian(latencies, 1);
           var averageLatency = parseInt(mathFunctions.average(newLatencies));
