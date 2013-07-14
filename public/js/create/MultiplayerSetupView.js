@@ -1,16 +1,19 @@
 define(function(require) {
-  var $          = require('jquery'),
-      _          = require('underscore'),
-      Backbone   = require('backbone'),
-      eventBus   = require('eventBus'),
-      Player     = require('game/Player'),
-      template   = require('text!create/multiplayerSetup.html'),
-      playerTmpl = require('text!create/player.html');
+  var $              = require('jquery'),
+      _              = require('underscore'),
+      Backbone       = require('backbone'),
+      eventBus       = require('eventBus'),
+      Player         = require('game/Player'),
+      template       = require('text!create/multiplayerSetup.html'),
+      playerTmpl     = require('text!create/player.html'),
+      difficultyTmpl = require('text!create/difficulty.html');
 
   var self;
   var MultiplayerSetupView = Backbone.View.extend({
     events: {
       'change td#difficulty select': 'changeDifficulty',
+      'click a#what-is-difficulty': 'showDifficultyModal',
+      'click div.difficultyModal span': 'closeDifficultyModal',
       'click table#colorSelection span': 'clickColor',
       'click button[name="createGame"]': 'clickStart'
     },
@@ -35,6 +38,18 @@ define(function(require) {
     },
     changeDifficulty: function() {
       this.socket.emit('changeDifficulty', this.$('td#difficulty select').val());
+    },
+    showDifficultyModal: function() {
+      // Don't create modal if it is already visible
+      if (this.$('div.difficultyModal').length == 0) {
+        this.$el.append('<div class="difficultyModal"></div>');
+        this.$('div.difficultyModal').html(_.template(difficultyTmpl)());
+        //var height = this.$('div.difficultyModal').height();
+        //this.$('div.difficultyModal').css('margin-top', -height/2 - 90);
+      }
+    },
+    closeDifficultyModal: function() {
+      this.$('div.difficultyModal').remove();
     },
     clickColor: function(e) {
       // Taken from http://stackoverflow.com/questions/1740700/how-to-get-hex-color-value-rather-than-rgb-value

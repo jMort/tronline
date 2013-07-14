@@ -352,6 +352,36 @@ h2 {
     text-align: center;
     color: #DDD;
 }
+div.multiplayerSetupView div.difficultyModal {
+    position: absolute;
+    left: 50%;
+    top: 100px;
+    width: 500px;
+    margin-left: -262px;
+    background-color: rgba(25, 25, 25, 0.85);
+    padding: 10px;
+    border: 2px #AAA solid;
+    border-radius: 5px;
+}
+div.multiplayerSetupView div.difficultyModal span {
+    font-size: 22px;
+    font-weight: bold;
+    position: absolute;
+    top: 1px;
+    right: 6px;
+    cursor: pointer;
+    -webkit-transition: color 0.15s linear;
+    -moz-transition: color 0.15s linear;
+    -o-transition: color 0.15s linear;
+    transition: color 0.15s linear;
+}
+div.multiplayerSetupView div.difficultyModal span:hover {
+    color: #999;
+    -webkit-transition: color 0.15s linear;
+    -moz-transition: color 0.15s linear;
+    -o-transition: color 0.15s linear;
+    transition: color 0.15s linear;
+}
 div.multiplayerSetupView table#setupMenu {
     margin: 0 auto;
 }
@@ -431,7 +461,9 @@ div.multiplayerSetupView div#playersInGameList {
     overflow-y: auto;
 }
 div.multiplayerSetupView a {
-    color: rgb(0, 0, 238);
+    color: rgb(0, 133, 255);
+    text-decoration: underline;
+    cursor: pointer;
 }
 div.multiplayerSetupView button {
     float: right;
