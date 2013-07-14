@@ -4,20 +4,13 @@ define(function(require) {
       Backbone     = require('backbone'),
       eventBus     = require('eventBus'),
       Kinetic      = require('kinetic'),
+      constants    = require('game/constants'),
       Game         = require('game/Game'),
       Player       = require('game/Player'),
       AI           = require('game/AI'),
       GameOverView = require('game/GameOverView'),
       template     = require('text!game/game.html');
 
-  var LEFT  = 37,
-      UP    = 38,
-      RIGHT = 39,
-      DOWN  = 40,
-      KEY_W = 87,
-      KEY_A = 65,
-      KEY_S = 83,
-      KEY_D = 68;
   var WIDTH, HEIGHT;
   var GameView = Backbone.View.extend({
     initialize: function(options) {
@@ -40,22 +33,24 @@ define(function(require) {
       }
     },
     singlePlayerInit: function() {
-      var player = new Player(this.nickname, 45, parseInt(this.renderedHeight/2), 5, 'E', '#BB2200');
+      var player = new Player(this.nickname, 45, parseInt(this.renderedHeight/2),
+                              constants.DEFAULT_PLAYER_SPEED, 'E', '#BB2200');
       var aiLogic = new AI(this.renderedWidth, this.renderedHeight);
-      var aiPlayer = new Player('AI', this.renderedWidth-45, parseInt(this.renderedHeight/2), 5, 'W', '#0022BB', aiLogic);
+      var aiPlayer = new Player('AI', this.renderedWidth-45, parseInt(this.renderedHeight/2),
+                                constants.DEFAULT_PLAYER_SPEED, 'W', '#0022BB', aiLogic);
       this.players = [player, aiPlayer];
       var self = this;
       this.game = new Game(this.renderedWidth, this.renderedHeight, this.players, function() {
         self.displayGameOver(self.game.results());
       });
       $(window).bind('keydown', function(e) {
-        if (e.keyCode == LEFT)
+        if (e.keyCode == constants.KEY_LEFT || e.keyCode == constants.KEY_A)
           player.updateDirection('W');
-        else if (e.keyCode == UP)
+        else if (e.keyCode == constants.KEY_UP || e.keyCode == constants.KEY_W)
           player.updateDirection('N');
-        else if (e.keyCode == RIGHT)
+        else if (e.keyCode == constants.KEY_RIGHT || e.keyCode == constants.KEY_D)
           player.updateDirection('E');
-        else if (e.keyCode == DOWN)
+        else if (e.keyCode == constants.KEY_DOWN || e.keyCode == constants.KEY_S)
           player.updateDirection('S');
       });
     },
@@ -68,21 +63,21 @@ define(function(require) {
         self.displayGameOver(self.game.results());
       });
       $(window).bind('keydown', function(e) {
-        if (e.keyCode == LEFT)
+        if (e.keyCode == constants.KEY_LEFT)
           player2.updateDirection('W');
-        else if (e.keyCode == UP)
+        else if (e.keyCode == constants.KEY_UP)
           player2.updateDirection('N');
-        else if (e.keyCode == RIGHT)
+        else if (e.keyCode == constants.KEY_RIGHT)
           player2.updateDirection('E');
-        else if (e.keyCode == DOWN)
+        else if (e.keyCode == constants.KEY_DOWN)
           player2.updateDirection('S');
-        else if (e.keyCode == KEY_W)
+        else if (e.keyCode == constants.KEY_W)
           player1.updateDirection('N');
-        else if (e.keyCode == KEY_A)
+        else if (e.keyCode == constants.KEY_A)
           player1.updateDirection('W');
-        else if (e.keyCode == KEY_S)
+        else if (e.keyCode == constants.KEY_S)
           player1.updateDirection('S');
-        else if (e.keyCode == KEY_D)
+        else if (e.keyCode == constants.KEY_D)
           player1.updateDirection('E');
       });
     },
@@ -90,7 +85,7 @@ define(function(require) {
       // Fast forwards a player ahead by X milliseconds and returns the new player
       var fastForwardPlayerByXMillis = function(player, millis) {
         var newPlayer = Player.clone(player);
-        var frames = parseInt(millis/(1000/30));
+        var frames = parseInt(millis/(1000/constants.FPS));
         for (var i = 0; i < frames; i++)
           newPlayer.move();
 
@@ -153,16 +148,16 @@ define(function(require) {
         // multiple times and spamming the server, making the game really slow.
         $(window).one('keydown', function(e) {
           var timestamp = new Date().getTime();
-          if (e.keyCode == LEFT) {
+          if (e.keyCode == constants.KEY_LEFT || e.keyCode == constants.KEY_A) {
             player.updateDirection('W');
             self.socket.emit('changeDirection', self.hostNickname, 'W', timestamp);
-          } else if (e.keyCode == UP) {
+          } else if (e.keyCode == constants.KEY_UP || e.keyCode == constants.KEY_W) {
             player.updateDirection('N');
             self.socket.emit('changeDirection', self.hostNickname, 'N', timestamp);
-          } else if (e.keyCode == RIGHT) {
+          } else if (e.keyCode == constants.KEY_RIGHT || e.keyCode == constants.KEY_D) {
             player.updateDirection('E');
             self.socket.emit('changeDirection', self.hostNickname, 'E', timestamp);
-          } else if (e.keyCode == DOWN) {
+          } else if (e.keyCode == constants.KEY_DOWN || e.keyCode == constants.KEY_S) {
             player.updateDirection('S');
             self.socket.emit('changeDirection', self.hostNickname, 'S', timestamp);
           }
@@ -174,7 +169,7 @@ define(function(require) {
           var players = self.game.getPlayers();
           for (var i in players)
             players[i].active = false;
-        }, 1000/30);
+        }, 1000/constants.FPS);
         self.displayGameOver(results);
       });
     },
@@ -247,7 +242,7 @@ define(function(require) {
         }
         layer.draw();
         game.update();
-      }, 1000/30);
+      }, 1000/constants.FPS);
       this.intervalId = intervalId;
     },
     renderMultiplayer: function() {
@@ -324,7 +319,7 @@ define(function(require) {
         // Only update if the game has started
         if (self.gameStarted)
           self.game.update();
-      }, 1000/30);
+      }, 1000/constants.FPS);
       this.intervalId = intervalId;
     },
     displayGameOver: function(results) {
