@@ -156,7 +156,7 @@ io.sockets.on('connection', function(socket) {
   setTimeout(each, 1);
 });
 
-var snapshotIntervalId = setInterval(function() {
+/*var snapshotIntervalId = setInterval(function() {
   var currentTime = new Date().getTime();
   for (var hostNickname in games) {
     if (!(hostNickname in gameSnapshots)) {
@@ -171,4 +171,4 @@ var snapshotIntervalId = setInterval(function() {
         delete gameSnapshots[hostNickname][time];
     }
   }
-}, 1000/30);
+}, 1000/30);*/
