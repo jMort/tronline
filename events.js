@@ -332,7 +332,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
           newPlayer.updateDirection(direction);
 
           // Simulate player forward in time by its ping
-          newPlayer = fastForwardPlayerByXMillis(newPlayer, ping);
+          newPlayer = fastForwardPlayerByXMillis(newPlayer, latency);
 
           // Replace player with new up-to-date player
           games[hostNickname].players[playerIndex] = newPlayer;
