@@ -1,3 +1,8 @@
+({ define: typeof define === 'function'
+            ? define
+            : function (f) {
+              module.exports = exports = f();
+            }}).
 define(function(require) {
   return {
                 KEY_LEFT : 37,
