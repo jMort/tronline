@@ -325,6 +325,8 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
           // We must halve the average ping because ping is the two-way trip
           var latency = averagePing/2;
 
+          console.log(nickname, latency);
+
           // Rewind the player's movement by the latency
           var newPlayer = helper.determinePlayerStateXMillisAgo(playersInGame[playerIndex], latency);
 
