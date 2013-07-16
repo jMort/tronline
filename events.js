@@ -318,8 +318,15 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
           }
         }
         if (playerIsInGame) {
-          var ping = helper.calculateAveragePing(playersInGame[playerIndex]._pings);
-          var newPlayer = helper.determinePlayerStateXMillisAgo(playersInGame[playerIndex], ping);
+          var pings = playersInGame[playerIndex]._pings;
+          var newPings = mathFunctions.filterNumbersXStandardDeviationsAwayFromMedian(pings, 1);
+          var averagePing = parseInt(mathFunctions.average(newPings));
+
+          // We must halve the average ping because ping is the two-way trip
+          var latency = averagePing/2;
+
+          // Rewind the player's movement by the latency
+          var newPlayer = helper.determinePlayerStateXMillisAgo(playersInGame[playerIndex], latency);
 
           // Now make the move. NOTE: The direction is validated in the Player class
           newPlayer.updateDirection(direction);
