@@ -304,7 +304,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
         }, 1000);
       }
     },
-    changeDirection: function(socket, hostNickname, direction, timestamp) {
+    changeDirection: function(socket, hostNickname, direction, path, timestamp) {
       if (hostNickname in games) {
         var nickname = socketIdToPlayerName[socket.id];
         var playersInGame = games[hostNickname].getPlayers();
@@ -325,10 +325,12 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
           // We must halve the average ping because ping is the two-way trip
           var latency = averagePing/2;
 
-          console.log(nickname, latency);
+          /*// Rewind the player's movement by the latency
+          var newPlayer = helper.determinePlayerStateXMillisAgo(playersInGame[playerIndex], latency);*/
 
-          // Rewind the player's movement by the latency
-          var newPlayer = helper.determinePlayerStateXMillisAgo(playersInGame[playerIndex], latency);
+          // Instead of rewinding the player's movement, use the path that the player sent
+          var newPlayer = Player.clone(playersInGame[playerIndex]);
+          newPlayer.path = path;
 
           // Now make the move. NOTE: The direction is validated in the Player class
           newPlayer.updateDirection(direction);

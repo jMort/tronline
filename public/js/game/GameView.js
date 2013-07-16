@@ -150,16 +150,16 @@ define(function(require) {
           var timestamp = new Date().getTime();
           if (e.keyCode == constants.KEY_LEFT || e.keyCode == constants.KEY_A) {
             player.updateDirection('W');
-            self.socket.emit('changeDirection', self.hostNickname, 'W', timestamp);
+            self.socket.emit('changeDirection', self.hostNickname, 'W', player.getPath(), timestamp);
           } else if (e.keyCode == constants.KEY_UP || e.keyCode == constants.KEY_W) {
             player.updateDirection('N');
-            self.socket.emit('changeDirection', self.hostNickname, 'N', timestamp);
+            self.socket.emit('changeDirection', self.hostNickname, 'N', player.getPath(), timestamp);
           } else if (e.keyCode == constants.KEY_RIGHT || e.keyCode == constants.KEY_D) {
             player.updateDirection('E');
-            self.socket.emit('changeDirection', self.hostNickname, 'E', timestamp);
+            self.socket.emit('changeDirection', self.hostNickname, 'E', player.getPath(), timestamp);
           } else if (e.keyCode == constants.KEY_DOWN || e.keyCode == constants.KEY_S) {
             player.updateDirection('S');
-            self.socket.emit('changeDirection', self.hostNickname, 'S', timestamp);
+            self.socket.emit('changeDirection', self.hostNickname, 'S', player.getPath(), timestamp);
           }
         });
       });
