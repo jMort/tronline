@@ -117,6 +117,7 @@ define(function(require) {
       this.nickname = null;
       eventBus.on('showLogin', function() {
         self.loginView.destroy();
+        delete self.loginView;
         self.$el.html('');
         self.appendTitle();
         self.showLogin();
@@ -125,7 +126,10 @@ define(function(require) {
         // Once the player logs in, store their nickname in the MainView
         if (nickname)
           self.nickname = nickname;
-        self.loginView.destroy();
+        if (self.loginView) {
+          self.loginView.destroy();
+          delete self.loginView;
+        }
         var normal = true;
         if (self.multiplayerSetupView) {
           normal = false;
@@ -157,16 +161,22 @@ define(function(require) {
       eventBus.on('playSinglePlayer', function() {
         self.homeView.$el.slideLeft(500, function() {
           self.homeView.destroy();
+          delete self.homeView;
           self.sidebarView.destroy();
+          delete self.sidebarView
           self.chatView.destroy();
+          delete self.chatView
           self.showSinglePlayer();
         });
       });
       eventBus.on('playHeadToHead', function() {
         self.homeView.$el.slideLeft(500, function() {
           self.homeView.destroy();
+          delete self.homeView;
           self.sidebarView.destroy();
+          delete self.sidebarView;
           self.chatView.destroy();
+          delete self.chatView;
           self.showHeadToHead();
         });
       });
@@ -174,21 +184,24 @@ define(function(require) {
         self.multiplayerSetupView.$el.slideLeft(500, function() {
           self.multiplayerSetupView.teardown();
           self.multiplayerSetupView.destroy();
+          delete self.multiplayerSetupView;
           self.sidebarView.destroy();
+          delete self.sidebarView;
           self.chatView.destroy();
+          delete self.chatView
           self.showMultiplayer(hostNickname, currentClockDiff);
         });
       });
       eventBus.on('createMultiplayer', function() {
         self.homeView.$el.slideLeft(500, function() {
           self.homeView.destroy();
+          delete self.homeView;
           self.showMultiplayerSetup({ isHost: true, hostNickname: self.nickname });
         });
       });
       eventBus.on('invitePlayer', function(player) {
         var nickname = $(player).text();
         if (self.multiplayerSetupView && nickname !== self.nickname) {
-          //$(player).removeClass('textGlow textGlowGreen textGlowRed').addClass('textGlowOrange');
           self.socket.emit('invitePlayer', nickname);
         } else if (nickname === self.nickname) {
           alert('You cannot invite yourself to a game!');
@@ -198,10 +211,23 @@ define(function(require) {
       });
       eventBus.on('acceptInvite', function(nickname) {
         self.socket.emit('acceptInvite', nickname);
-        self.homeView.$el.slideLeft(500, function() {
-          self.homeView.destroy();
-          self.showMultiplayerSetup({ isHost: false, hostNickname: nickname });
-        });
+        if (self.homeView) {
+          self.homeView.$el.slideLeft(500, function() {
+            self.homeView.destroy();
+            delete self.homeView;
+            self.showMultiplayerSetup({ isHost: false, hostNickname: nickname });
+          });
+        } else if (self.gameView) {
+          self.gameView.$el.fadeOut(500, function() {
+            self.gameView.teardown();
+            self.gameView.destroy();
+            delete self.gameView;
+            self.appendTitle();
+            self.$('h1').css('margin-right', '220px');
+            self.showSidebarAndChat(self.nickname);
+            self.showMultiplayerSetup({ isHost: false, hostNickname: nickname });
+          });
+        }
       });
       eventBus.on('declineInvite', function(nickname) {
         self.socket.emit('declineInvite', nickname);
