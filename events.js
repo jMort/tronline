@@ -25,6 +25,11 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
       positions.push({ x: width/2, y: margin, direction: 'S' });
       positions.push({ x: width-margin, y: height-margin, direction: 'W'});
       positions.push({ x: margin, y: height-margin, direction: 'E' });
+    } else if (numPlayers === 4) {
+      positions.push({ x: margin, y: margin, direction: 'E' });
+      positions.push({ x: width-margin, y: margin, direction: 'W' });
+      positions.push({ x: width-margin, y: height-margin, direction: 'W'});
+      positions.push({ x: margin, y: height-margin, direction: 'E' });
     }
 
     // Now clean all positions by making sure they are at multiples of 10
