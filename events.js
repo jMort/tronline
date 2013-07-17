@@ -17,10 +17,14 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
   var initialPositions = function(width, height, margin, numPlayers) {
     var positions = [];
     if (numPlayers === 1) {
-      positions.push({x: margin, y: height/2, direction: 'E'});
+      positions.push({ x: margin, y: height/2, direction: 'E' });
     } else if (numPlayers === 2) {
-      positions.push({x: margin, y: height/2, direction: 'E'});
-      positions.push({x: width-margin, y: height/2, direction: 'W'});
+      positions.push({ x: margin, y: height/2, direction: 'E' });
+      positions.push({ x: width-margin, y: height/2, direction: 'W' });
+    } else if (numPlayers === 3) {
+      positions.push({ x: width/2, y: margin, direction: 'S' });
+      positions.push({ x: width-margin, y: height-margin, direction: 'W'});
+      positions.push({ x: margin, y: height-margin, direction: 'E' });
     }
 
     // Now clean all positions by making sure they are at multiples of 10
@@ -242,12 +246,16 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
           });
 
           var gamePlayers = [pendingGames[nickname].host].concat(pendingGames[nickname].accepted);
-          var positions = initialPositions(800, 600, 50, gamePlayers.length);
+          var scale = gamePlayers.length;
+          var width = 400*scale;
+          var height = 300*scale;
+          var positions = initialPositions(width, height, 50, gamePlayers.length);
           for (var p in positions) {
             gamePlayers[p].path = [[positions[p].x, positions[p].y]];
             gamePlayers[p].direction = positions[p].direction;
           }
-          var game = new Game(800, 600, gamePlayers, true);
+
+          var game = new Game(width, height, gamePlayers, true);
           games[nickname] = game;
           broadcastGameState(nickname);
 
