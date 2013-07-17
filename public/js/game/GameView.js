@@ -269,27 +269,27 @@ define(function(require) {
     renderMultiplayer: function() {
       this.$el.hide().html(_.template(template)()).fadeIn(500);
 
-      var width  = this.game.width + 20,
-          height = this.game.height + 20;
+      var width  = this.game.width,
+          height = this.game.height;
       var scale = 1;
-      if (width > WIDTH || height > HEIGHT) {
-        if (width-WIDTH > height-HEIGHT)
-          scale = (WIDTH-100)/width;
+      if (width+20 > WIDTH || height+20 > HEIGHT) {
+        if (width+20-WIDTH > height+20-HEIGHT)
+          scale = (WIDTH-50)/(width+20);
         else
-          scale = (HEIGHT-100)/height;
+          scale = (HEIGHT-50)/(height+20);
       }
       var stage = new Kinetic.Stage({
         container: 'gameCanvasContainer',
-        width: width,
-        height: height,
+        width: width+20,
+        height: height+20,
         scale: scale
       });
 
       this.$('div#gameCanvasContainer').css('position', 'absolute');
       this.$('div#gameCanvasContainer').css('left', '50%');
       this.$('div#gameCanvasContainer').css('top', '50%');
-      this.$('div#gameCanvasContainer').width(width*scale);
-      this.$('div#gameCanvasContainer').height(height*scale);
+      this.$('div#gameCanvasContainer').width((width+20)*scale);
+      this.$('div#gameCanvasContainer').height((height+20)*scale);
       var w = this.$('div#gameCanvasContainer').width();
       var h = this.$('div#gameCanvasContainer').height();
       this.$('div#gameCanvasContainer').css('margin-left', -w/2);
