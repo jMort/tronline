@@ -47,7 +47,17 @@ function handler(req, res) {
           if (req.url.lastIndexOf(ext) == req.url.length - ext.length)
             contentType = extensionToContentType[ext];
         }
-        res.writeHead(200, { 'Content-type': contentType });
+        var headers = { 'Content-type': contentType };
+        if (contentType == 'image/png') {
+          headers['Pragma'] = 'public';
+          // Set max age to 24 hours
+          headers['Cache-control'] = 'max-age=86400';
+          var today = new Date();
+          var tomorrow = new Date();
+          tomorrow.setHours(today.getHours()+24);
+          headers['Expires'] = tomorrow.toUTCString();
+        }
+        res.writeHead(200, headers);
         res.end(data);
       }
     });
