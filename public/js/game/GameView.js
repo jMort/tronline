@@ -153,12 +153,20 @@ define(function(require) {
           }
         }
       });
-      this.socket.on('gameOver', function(results) {
+      this.socket.on('gameOver', function(data) {
+        self.game = Game.createNewFromObject(data.game);
+        var results = data.results;
         // Wait one frame before deactivating players so the flashing animation can happen
         setTimeout(function() {
           var players = self.game.getPlayers();
-          for (var i in players)
-            players[i].active = false;
+          for (var i in players) {
+            if (!players[i].active) {
+              players[i].active = true;
+              players[i].deactivate();
+            } else {
+              players[i].active = false;
+            }
+          }
         }, 1000/constants.FPS);
         self.displayGameOver(results);
       });

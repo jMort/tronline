@@ -362,7 +362,8 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
             if (numActivePlayers == 1 || numActivePlayers == 0) {
               clearInterval(gameIntervalIds[hostNickname]);
               var group = games[hostNickname].getPlayers();
-              sendEventToPlayerGroup(group, 'gameOver', games[hostNickname].results());
+              var results = games[hostNickname].results();
+              sendEventToPlayerGroup(group, 'gameOver', { game: games[hostNickname], results: results});
               for (var i in group) {
                 group[i].setColor('');
                 group[i].active = true;
