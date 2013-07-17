@@ -107,6 +107,8 @@ define(function(require) {
 
       this.gameStarted = false;
       var countdown = 3;
+      var player;
+      var lastKeyPressed = null;
       var self = this;
       this.socket.on('startCountdown', function() {
         var intervalId = setInterval(function() {
@@ -134,34 +136,22 @@ define(function(require) {
 
           self.$el.append($(countdownTitle));
         } else {
-          self.game = fastForwardGameByXMillis(Game.createNewFromObject(data.game), millis);
-        }
-        var players = self.game.getPlayers();
-        for (var i in players) {
-          if (players[i].nickname === self.nickname) {
-            var player = players[i];
-            break;
+          // Only update the other players, not yourself
+          var game = fastForwardGameByXMillis(Game.createNewFromObject(data.game), millis);
+          for (var i in game.players) {
+            if (game.players[i].nickname !== self.nickname)
+              self.game.players[i] = game.players[i];
           }
         }
 
-        // We need to use 'one' instead of 'bind' to stop it picking up a keydown event
-        // multiple times and spamming the server, making the game really slow.
-        $(window).one('keydown', function(e) {
-          var timestamp = new Date().getTime();
-          if (e.keyCode == constants.KEY_LEFT || e.keyCode == constants.KEY_A) {
-            player.updateDirection('W');
-            self.socket.emit('changeDirection', self.hostNickname, 'W', player.getPath(), timestamp);
-          } else if (e.keyCode == constants.KEY_UP || e.keyCode == constants.KEY_W) {
-            player.updateDirection('N');
-            self.socket.emit('changeDirection', self.hostNickname, 'N', player.getPath(), timestamp);
-          } else if (e.keyCode == constants.KEY_RIGHT || e.keyCode == constants.KEY_D) {
-            player.updateDirection('E');
-            self.socket.emit('changeDirection', self.hostNickname, 'E', player.getPath(), timestamp);
-          } else if (e.keyCode == constants.KEY_DOWN || e.keyCode == constants.KEY_S) {
-            player.updateDirection('S');
-            self.socket.emit('changeDirection', self.hostNickname, 'S', player.getPath(), timestamp);
+        // Find the player with our nickname and store a reference to it in player
+        var players = self.game.getPlayers();
+        for (var i in players) {
+          if (players[i].nickname === self.nickname) {
+            player = players[i];
+            break;
           }
-        });
+        }
       });
       this.socket.on('gameOver', function(results) {
         // Wait one frame before deactivating players so the flashing animation can happen
@@ -171,6 +161,29 @@ define(function(require) {
             players[i].active = false;
         }, 1000/constants.FPS);
         self.displayGameOver(results);
+      });
+
+      $(window).bind('keydown', function(e) {
+        var timestamp = new Date().getTime();
+        if (player && e.keyCode !== lastKeyPressed) {
+          lastKeyPressed = e.keyCode;
+          if (e.keyCode == constants.KEY_LEFT || e.keyCode == constants.KEY_A) {
+            self.socket.emit('changeDirection', self.hostNickname, 'W', player.getPath(), timestamp);
+            player.updateDirection('W');
+          } else if (e.keyCode == constants.KEY_UP || e.keyCode == constants.KEY_W) {
+            self.socket.emit('changeDirection', self.hostNickname, 'N', player.getPath(), timestamp);
+            player.updateDirection('N');
+          } else if (e.keyCode == constants.KEY_RIGHT || e.keyCode == constants.KEY_D) {
+            self.socket.emit('changeDirection', self.hostNickname, 'E', player.getPath(), timestamp);
+            player.updateDirection('E');
+          } else if (e.keyCode == constants.KEY_DOWN || e.keyCode == constants.KEY_S) {
+            self.socket.emit('changeDirection', self.hostNickname, 'S', player.getPath(), timestamp);
+            player.updateDirection('S');
+          }
+        }
+      });
+      $(window).bind('keyup', function(e) {
+        lastKeyPressed = null;
       });
     },
     translatePoints: function(points) {
