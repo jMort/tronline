@@ -1,6 +1,6 @@
 var helper = require('./helper');
 var mathFunctions = require('./public/js/mathFunctions');
-module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdToPlayerName, socketIdToLastSynchronizeTime, socketIdToLatencies, socketIdToClockOffset, pendingGames, playerColorList, games, gameSnapshots, indexOfKeyValuePairInArray, addToPending) {
+module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdToPlayerName, socketIdToLastSynchronizeTime, socketIdToLatencies, socketIdToClockOffset, pendingGames, playerColorList, games, gameSnapshots, gameIntervalIds, indexOfKeyValuePairInArray, addToPending) {
   // Sends event to all players in array `playerGroup`
   var sendEventToPlayerGroup = function(playerGroup, event, data) {
     for (var i in playerGroup) {
@@ -247,7 +247,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
             gamePlayers[p].path = [[positions[p].x, positions[p].y]];
             gamePlayers[p].direction = positions[p].direction;
           }
-          var game = new Game(800, 600, gamePlayers);
+          var game = new Game(800, 600, gamePlayers, true);
           games[nickname] = game;
           broadcastGameState(nickname);
 
@@ -285,17 +285,11 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
             var intervalId = setInterval(function() {
               game.update();
             }, 1000/30);
-            game.setGameOverCallback(function() {
-              clearInterval(intervalId);
-              var group = game.getPlayers();
-              sendEventToPlayerGroup(group, 'gameOver', game.results());
-              for (var i in group) {
-                group[i].setColor('');
-                group[i].active = true;
-                group[i].nextDirection = null;
-              }
-              delete games[nickname];
-              delete gameSnapshots[nickname];
+            gameIntervalIds[nickname] = intervalId;
+            game.setPlayerDiedCallback(function(playerIndex) {
+              var numActivePlayers = game.getNumActivePlayers();
+              if (numActivePlayers > 0)
+                game.players[playerIndex].active = false;
             });
             var broadcastIntervalId = setInterval(function() {
               broadcastGameState(nickname, broadcastIntervalId);
@@ -318,6 +312,7 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
           }
         }
         if (playerIsInGame) {
+          games[hostNickname].players[playerIndex].active = true;
           var pings = playersInGame[playerIndex]._pings;
           var newPings = mathFunctions.filterNumbersXStandardDeviationsAwayFromMedian(pings, 1);
           var averagePing = parseInt(mathFunctions.average(newPings));
@@ -345,6 +340,40 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
           broadcastGameState(hostNickname);
         }
       }
+    },
+    playerDied: function(socket, hostNickname, path) {
+      // Wait a short period of time to make sure the playerDiedCallback was called first
+      setTimeout(function() {
+        if (hostNickname in games) {
+          var nickname = socketIdToPlayerName[socket.id];
+          var playersInGame = games[hostNickname].getPlayers();
+          var playerIsInGame = false;
+          var playerIndex = -1;
+          for (var i in playersInGame) {
+            if (playersInGame[i].nickname === nickname) {
+              playerIsInGame = true;
+              playerIndex = i;
+              break;
+            }
+          }
+          if (playerIsInGame) {
+            games[hostNickname].players[playerIndex].path = path;
+            var numActivePlayers = games[hostNickname].getNumActivePlayers();
+            if (numActivePlayers == 1 || numActivePlayers == 0) {
+              clearInterval(gameIntervalIds[hostNickname]);
+              var group = games[hostNickname].getPlayers();
+              sendEventToPlayerGroup(group, 'gameOver', games[hostNickname].results());
+              for (var i in group) {
+                group[i].setColor('');
+                group[i].active = true;
+                group[i].nextDirection = null;
+              }
+              delete games[hostNickname];
+              delete gameSnapshots[hostNickname];
+            }
+          }
+        }
+      }, 10);
     },
     disconnect: function(socket) {
       console.log('User disconnected');

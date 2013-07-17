@@ -8,12 +8,14 @@
             }}).
 define(function(require) {
   var Player = require('game/Player');
-  var Game = function(width, height, players, callback) {
+  var Game = function(width, height, players, isServerGame, callback) {
     this.width = width;
     this.height = height;
     this.players = players;
     this.running = true;
+    this.isServerGame = isServerGame;
     var gameOverCallback = callback;
+    var playerDiedCallback = null;
 
     var isCollision = function(point, direction, paths) {
       if (direction === 'N')
@@ -69,11 +71,14 @@ define(function(require) {
         var player = self.players[i];
         var point = player.getHead();
         if (isCollision([point[0], point[1]], player.getDirection(), paths)) {
-          player.deactivate();
-          var numActivePlayers = 0;
-          for (var j in self.players)
-            numActivePlayers += self.players[j].active;
-          if ((numActivePlayers == 1 || numActivePlayers == 0) && gameOverCallback) {
+          if (player.active && playerDiedCallback)
+            playerDiedCallback(i);
+          if (self.isServerGame)
+            player.active = false;
+          else
+            player.deactivate();
+          var numActivePlayers = self.getNumActivePlayers();
+          if ((numActivePlayers == 1 || numActivePlayers == 0) && gameOverCallback && !self.isServerGame) {
             for (var j in self.players)
               self.players[j].active = false;
             gameOverCallback();
@@ -88,8 +93,19 @@ define(function(require) {
       return self.players;
     };
 
+    this.getNumActivePlayers = function() {
+      var numActivePlayers = 0;
+      for (var j in self.players)
+        numActivePlayers += self.players[j].active;
+      return numActivePlayers;
+    };
+
     this.setGameOverCallback = function(callback) {
       gameOverCallback = callback;
+    };
+
+    this.setPlayerDiedCallback = function(callback) {
+      playerDiedCallback = callback;
     };
 
     this.results = function() {
@@ -119,6 +135,8 @@ define(function(require) {
       players.push(Player.createNewFromObject(obj.players[i]));
     }
     var game = new Game(obj.width, obj.height, players);
+    game.running = obj.running;
+    game.isServerGame = obj.isServerGame;
     return game;
   };
 

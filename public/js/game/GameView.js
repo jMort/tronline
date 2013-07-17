@@ -40,7 +40,7 @@ define(function(require) {
                                 constants.DEFAULT_PLAYER_SPEED, 'W', '#0022BB', aiLogic);
       this.players = [player, aiPlayer];
       var self = this;
-      this.game = new Game(this.renderedWidth, this.renderedHeight, this.players, function() {
+      this.game = new Game(this.renderedWidth, this.renderedHeight, this.players, false, function() {
         self.displayGameOver(self.game.results());
       });
       $(window).bind('keydown', function(e) {
@@ -59,7 +59,7 @@ define(function(require) {
       var player2 = new Player('PLAYER 2', this.renderedWidth-45, parseInt(this.renderedHeight/2), 5, 'W', '#0022BB');
       this.players = [player1, player2];
       var self = this;
-      this.game = new Game(this.renderedWidth, this.renderedHeight, this.players, function() {
+      this.game = new Game(this.renderedWidth, this.renderedHeight, this.players, false, function() {
         self.displayGameOver(self.game.results());
       });
       $(window).bind('keydown', function(e) {
@@ -136,8 +136,8 @@ define(function(require) {
 
           self.$el.append($(countdownTitle));
         } else {
-          // Only update the other players, not yourself
           var game = fastForwardGameByXMillis(Game.createNewFromObject(data.game), millis);
+          // Only update the other players, not yourself
           for (var i in game.players) {
             if (game.players[i].nickname !== self.nickname)
               self.game.players[i] = game.players[i];
@@ -292,6 +292,7 @@ define(function(require) {
       stage.add(borderLayer);
       stage.add(layer);
 
+      var hasPlayerDied = false;
       var self = this;
       var intervalId = setInterval(function() {
         layer.removeChildren();
@@ -330,8 +331,22 @@ define(function(require) {
         }
         layer.draw();
         // Only update if the game has started
-        if (self.gameStarted)
+        if (self.gameStarted) {
           self.game.update();
+          var player;
+          // Find the player with our nickname and store a reference to it in player
+          var players = self.game.getPlayers();
+          for (var i in players) {
+            if (players[i].nickname === self.nickname) {
+              player = players[i];
+              break;
+            }
+          }
+          if (!player.active && !hasPlayerDied) {
+            self.socket.emit('playerDied', self.hostNickname, player.getPath());
+            hasPlayerDied = true;
+          }
+        }
       }, 1000/constants.FPS);
       this.intervalId = intervalId;
     },

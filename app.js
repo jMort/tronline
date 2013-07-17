@@ -74,6 +74,7 @@ var playerColorList = ['#BB2200', '#0022BB', '#9900FF', '#FF00FF', '#FF6600', '#
 var games = {};
 // gameSnapshots will be accessed using the player's nickname and a time
 var gameSnapshots = {};
+var gameIntervalIds = {};
 var socketIdToSocket = {};
 var socketIdToPlayerName = {};
 var socketIdToLastSynchronizeTime = {};
@@ -113,7 +114,8 @@ var events = require('./events.js')(io,
                                     players, socketIdToSocket, socketIdToPlayerName,
                                     socketIdToLastSynchronizeTime, socketIdToLatencies,
                                     socketIdToClockOffset, pendingGames, playerColorList,
-                                    games, gameSnapshots, indexOfKeyValuePairInArray, addToPending);
+                                    games, gameSnapshots, gameIntervalIds,
+                                    indexOfKeyValuePairInArray, addToPending);
 
 io.sockets.on('connection', function(socket) {
   console.log('User connected');
