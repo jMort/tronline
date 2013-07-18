@@ -252,8 +252,8 @@ module.exports = function(io, Game, Player, players, socketIdToSocket, socketIdT
 
           var gamePlayers = [pendingGames[nickname].host].concat(pendingGames[nickname].accepted);
           var scale = gamePlayers.length;
-          var width = 400*scale;
-          var height = 300*scale;
+          var width = 800*scale;
+          var height = 450*scale;
           var positions = initialPositions(width, height, 50, gamePlayers.length);
           for (var p in positions) {
             gamePlayers[p].path = [[positions[p].x, positions[p].y]];
