@@ -274,9 +274,9 @@ define(function(require) {
       var scale = 1;
       if (width+20 > WIDTH || height+20 > HEIGHT) {
         if (width+20-WIDTH > height+20-HEIGHT)
-          scale = (WIDTH-50)/(width+20);
+          scale = (WIDTH-220)/(width+20);
         else
-          scale = (HEIGHT-50)/(height+20);
+          scale = (HEIGHT-220)/(height+20);
       }
       var stage = new Kinetic.Stage({
         container: 'gameCanvasContainer',
