@@ -18,16 +18,27 @@ function handler(req, res) {
     res.writeHead(303, { 'Location': 'http://www.tronline.me'+req.url });
     return res.end();
   }
+
+  var url = req.url;
   // Automatically look for index.html file if path is a directory as this is not done by default
   if (fs.existsSync(__dirname + '/public' + req.url)) {
+    url = '/public' + req.url;
     if (fs.statSync(__dirname + '/public' + req.url).isDirectory()) {
       if (fs.existsSync(__dirname + '/public' + req.url + 'index.html')) {
-        req.url += 'index.html';
+        url += 'index.html';
       }
+    }
+  } else if (req.url.split('/')[1] == 'test') {
+    if (fs.existsSync(__dirname + req.url)) {
+      if (fs.statSync(__dirname + req.url).isDirectory()) {
+        url = '/test/runner.html';
+      }
+    } else {
+      url = '/test/runner.html';
     }
   }
   
-  fs.readFile(__dirname + '/public' + req.url,
+  fs.readFile(__dirname + url,
     function(err, data) {
       if (err) {
         //res.writeHead(404);
@@ -44,7 +55,7 @@ function handler(req, res) {
           '.png' : 'image/png'
         };
         for (var ext in extensionToContentType) {
-          if (req.url.lastIndexOf(ext) == req.url.length - ext.length)
+          if (url.lastIndexOf(ext) == url.length - ext.length)
             contentType = extensionToContentType[ext];
         }
         var headers = { 'Content-type': contentType };
